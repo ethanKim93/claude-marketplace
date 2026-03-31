@@ -9,15 +9,6 @@
   },
   "plugins": [
     {
-      "name": "video-production",
-      "source": "./plugins/video-production",
-      "description": "AI 기반 영상 제작 자동화 스킬 모음 (대본 생성, TTS, 이미지 생성, 영상 합성)",
-      "category": "media",
-      "version": "1.0.0",
-      "author": "kimminhyeon",
-      "keywords": ["video", "ai", "automation", "ffmpeg", "tts", "gemini"]
-    },
-    {
       "name": "architecture",
       "source": "./plugins/architecture",
       "description": "DDD 기반 소프트웨어 아키텍처 설계 스킬",
@@ -25,6 +16,15 @@
       "version": "1.0.0",
       "author": "kimminhyeon",
       "keywords": ["ddd", "architecture", "bounded-context", "aggregate", "hexagonal"]
+    },
+    {
+      "name": "product-management",
+      "source": "./plugins/product-management",
+      "description": "제품 관리 스킬 모음 - PRD 작성, 요구사항 정의, 사용자 스토리 도출",
+      "category": "product",
+      "version": "1.0.0",
+      "author": "kimminhyeon",
+      "keywords": ["prd", "product-management", "requirements", "user-story", "okr", "acceptance-criteria"]
     }
   ]
 }
