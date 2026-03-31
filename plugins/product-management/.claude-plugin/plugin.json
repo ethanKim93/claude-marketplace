@@ -7,8 +7,32 @@
   "keywords": ["prd", "product-management", "requirements", "user-story", "okr", "acceptance-criteria"],
   "commands": [
     {
-      "name": "write-prd",
-      "source": "./skills/write-prd"
+      "name": "prd-writer",
+      "source": "./skills/prd-writer"
+    },
+    {
+      "name": "brd-writer",
+      "source": "./skills/brd-writer"
+    },
+    {
+      "name": "brd-reviewer",
+      "source": "./skills/brd-reviewer"
+    },
+    {
+      "name": "ppt-maker",
+      "source": "./skills/ppt-maker"
+    },
+    {
+      "name": "prd-reviewer",
+      "source": "./skills/prd-reviewer"
+    },
+    {
+      "name": "roadmap-generator",
+      "source": "./skills/roadmap-generator"
+    },
+    {
+      "name": "task-runner",
+      "source": "./skills/task-runner"
     }
   ]
 }

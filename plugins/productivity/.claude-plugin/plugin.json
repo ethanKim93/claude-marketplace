@@ -1,0 +1,14 @@
+{
+  "name": "productivity",
+  "version": "1.0.0",
+  "description": "생산성 도구 모음 — 디렉터리 구조 분석 및 정리, 파일 관리를 지원합니다.",
+  "author": "kimminhyeon",
+  "license": "MIT",
+  "keywords": ["folder", "directory", "organize", "cleanup", "productivity", "file-management"],
+  "commands": [
+    {
+      "name": "folder-organizer",
+      "source": "./skills/folder-organizer"
+    }
+  ]
+}

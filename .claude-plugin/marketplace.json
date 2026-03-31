@@ -25,6 +25,15 @@
       "version": "1.0.0",
       "author": "kimminhyeon",
       "keywords": ["prd", "product-management", "requirements", "user-story", "okr", "acceptance-criteria"]
+    },
+    {
+      "name": "productivity",
+      "source": "./plugins/productivity",
+      "description": "생산성 도구 모음 - 디렉터리 구조 분석 및 정리, 파일 관리 지원",
+      "category": "productivity",
+      "version": "1.0.0",
+      "author": "kimminhyeon",
+      "keywords": ["folder", "directory", "organize", "cleanup", "file-management", "productivity"]
     }
   ]
 }

@@ -1,0 +1,23 @@
+{
+  "skill_name": "brd-reviewer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "이 BRD 문서를 검토해줘. 섹션 0~6만 있고 리스크, 비용-편익, 승인 섹션이 없어. 목표도 '성능 개선', '고객 만족 향상' 수준으로 작성되어 있어. 파일 경로: brd-reviewer-workspace/iteration-1/eval-incomplete/input/sample-brd-incomplete.md",
+      "expected_output": "섹션 8(리스크), 10(비용-편익), 11(승인)에 ❌ 등급 부여, 섹션 3(목표)에 ⚠️ 등급(SMART 미충족), Critical 심각도 질문이 포함된 BRD-REVIEW 및 BRD-QA 파일 2개 생성",
+      "files": ["brd-reviewer-workspace/iteration-1/eval-incomplete/input/sample-brd-incomplete.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "BRD 리뷰 부탁합니다. 파일: brd-reviewer-workspace/iteration-1/eval-quality-issues/input/sample-brd-quality-issues.md — 13개 섹션이 다 있는데 Must Have가 75%이고, 요구사항에 '가능하면 빠르게 처리'나 'Oracle DB를 사용하여 저장'같은 표현이 있어요.",
+      "expected_output": "Must Have 75% Critical 이슈 지적, 금지어구 발견(가능하면/빠르게) Major 이슈, What vs How 위반(Oracle DB) Major 이슈, 요구사항 품질 분석 테이블 포함, BRD-REVIEW 및 BRD-QA 파일 2개 생성",
+      "files": ["brd-reviewer-workspace/iteration-1/eval-quality-issues/input/sample-brd-quality-issues.md"]
+    },
+    {
+      "id": 3,
+      "prompt": "승인 제출 전에 최종 BRD 검토 한 번 해주세요: brd-reviewer-workspace/iteration-1/eval-mostly-good/input/sample-brd-good.md — SMART 목표 있고, Must Have 55%이고, REQ-ID도 다 있는데 용어집이 3개 항목밖에 없고 가정 테이블에 '영향' 컬럼이 없어요.",
+      "expected_output": "대부분 섹션 ✅, 섹션 12(용어집) ⚠️, 섹션 7(가정 영향 없음) ⚠️, Minor 심각도 질문 위주, 전체적으로 승인 가능 수준이라는 긍정적 평가 포함, BRD-REVIEW 및 BRD-QA 파일 2개 생성",
+      "files": ["brd-reviewer-workspace/iteration-1/eval-mostly-good/input/sample-brd-good.md"]
+    }
+  ]
+}
