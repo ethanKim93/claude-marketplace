@@ -1,0 +1,14 @@
+{
+  "name": "database",
+  "version": "1.0.0",
+  "description": "Oracle DB 설계 스킬 모음 — 요구사항 수집부터 개념/논리/물리 설계, DDL 생성, 최적화 검토까지 한국 엔터프라이즈 표준을 준수하며 단계별로 안내합니다.",
+  "author": "kimminhyeon",
+  "license": "MIT",
+  "keywords": ["oracle", "database", "db-design", "ddl", "erd", "normalization", "partitioning", "naming-convention", "standard-dictionary"],
+  "commands": [
+    {
+      "name": "oracle-db-designer",
+      "source": "./skills/oracle-db-designer"
+    }
+  ]
+}

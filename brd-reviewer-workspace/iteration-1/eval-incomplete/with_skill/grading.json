@@ -1,0 +1,85 @@
+{
+  "expectations": [
+    {
+      "text": "BRD-REVIEW 파일과 BRD-QA 파일, 두 개의 출력 파일이 생성되었다",
+      "passed": true,
+      "evidence": "outputs/ 디렉터리에 BRD-REVIEW-sample-brd-incomplete.md 와 BRD-QA-sample-brd-incomplete.md 두 파일이 모두 존재한다."
+    },
+    {
+      "text": "섹션 8(리스크), 10(비용-편익), 11(승인) 중 적어도 두 개에 ❌ 등급이 부여되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW 파일 섹션별 평가 테이블에서 세 섹션 모두 ❌ 미흡 등급 부여: '8. 리스크 | ❌ 미흡 | 섹션 자체가 없다.', '10. 비용-편익 분석 | ❌ 미흡 | 섹션 자체가 없다.', '11. 승인 | ❌ 미흡 | 섹션 자체가 없다.'"
+    },
+    {
+      "text": "섹션 3(프로젝트 목표)에 SMART 미충족으로 인한 ⚠️ 또는 ❌ 등급이 부여되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW 파일에서 '3. 프로젝트 목표 | ❌ 미흡 | \"고객 만족도를 향상시킨다\", \"운영 비용을 절감한다\", \"서비스 품질을 개선한다\" 세 목표 모두 SMART 기준을 충족하지 못한다. 측정 지표·기준선·목표값·달성 기한이 전혀 없다.'"
+    },
+    {
+      "text": "Critical 심각도 질문이 1개 이상 포함되었다",
+      "passed": true,
+      "evidence": "BRD-QA 파일에 'Critical — BRD 승인 전 필수 답변' 섹션 하에 Q1~Q6 총 6개의 Critical 질문이 존재한다. (예: Q1 '\"고객 만족도를 향상시킨다\"의 측정 지표와 목표값은 무엇인가?', Q4 '3억원 투자에 대한 기대 편익(ROI)은 얼마인가?')"
+    },
+    {
+      "text": "Must Have 100% 또는 과도한 Must Have 비율이 Critical 이슈로 지적되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW 핵심 보완 사항 Critical 섹션 항목 4번: 'Must Have 비율 조정: 기능 요구사항 5개 전체가 Must Have(100%)로 설정되어 있다. Should Have·Could Have로 재분류하여 60% 이하로 조정하지 않으면 일정 지연 위험이 매우 높다.' 또한 요구사항 품질 분석 테이블에서도 'Must Have 비율 | 100% — 기능 요구사항 5개 전체 Must Have (기준: 60% 이하) | ❌'로 명시."
+    },
+    {
+      "text": "비기능 요구사항의 금지어구(빠르게, 사용자 친화적)가 이슈로 식별되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW 요구사항 품질 분석 테이블: '금지어구 발견 | 3건 — \"빠르게\"(비기능 1행), \"보안이 강화\"(모호 표현, 비기능 2행), \"사용자 친화적\"(비기능 3행) | ❌'. 섹션 6 평가에서도 동일하게 식별됨."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {},
+  "timing": {},
+  "claims": [
+    {
+      "claim": "BRD 포맷이 'Full BRD 13섹션 중 6개 섹션만 존재'하는 비정형 BRD로 식별되었다",
+      "type": "factual",
+      "verified": true,
+      "evidence": "BRD-REVIEW 헤더 테이블: 'BRD 포맷 | 비정형 BRD (Full BRD 13섹션 중 6개 섹션만 존재)'"
+    },
+    {
+      "claim": "전체 완성도가 완성 1개 / 부분 3개 / 미흡 9개로 평가되었다",
+      "type": "factual",
+      "verified": true,
+      "evidence": "BRD-REVIEW 헤더 테이블: '전체 완성도 | 완성 1개 / 부분 3개 / 미흡 9개'"
+    },
+    {
+      "claim": "QA 파일에 총 18개 질문(Critical 6 / Major 8 / Minor 4)이 생성되었다",
+      "type": "factual",
+      "verified": true,
+      "evidence": "BRD-QA 헤더 테이블: '총 질문 수 | 18개 (Critical: 6 / Major: 8 / Minor: 4)'. 실제 Q1~Q18까지 18개 질문이 모두 존재함."
+    },
+    {
+      "claim": "REQ-ID 체계(REQ-NNN)가 기능 요구사항에 적용된 것은 긍정적으로 평가되었다",
+      "type": "quality",
+      "verified": true,
+      "evidence": "BRD-REVIEW 섹션 6 평가: '기능 요구사항 REQ-001~REQ-005가 REQ-NNN ID 체계로 작성된 점은 긍정적이다.'"
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "BRD-REVIEW 파일과 BRD-QA 파일, 두 개의 출력 파일이 생성되었다",
+        "reason": "파일 존재 여부만 확인하므로 내용이 비어 있거나 관련 없는 내용이어도 통과한다. 각 파일이 대상 BRD를 실제로 검토한 결과물인지 확인하는 내용 기반 assertion이 추가되면 더 강력해진다."
+      },
+      {
+        "reason": "출력 언어 및 구조 일관성을 검증하는 assertion이 없다. 스킬이 섹션별 등급 테이블, 핵심 보완 사항 분류(Critical/Major/Minor), 다음 단계 체크리스트 등 구조화된 형식을 올바르게 출력했는지 확인하는 assertion을 추가할 수 있다."
+      }
+    ],
+    "overall": "핵심 기능 검증 assertion들은 적절하며 실질적인 내용 확인이 가능하다. 파일 존재 여부 assertion이 다소 약하고, 출력 구조 품질을 검증하는 assertion이 추가되면 eval 완성도가 높아진다."
+  }
+}

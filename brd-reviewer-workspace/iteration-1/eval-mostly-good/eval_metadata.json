@@ -1,0 +1,32 @@
+{
+  "eval_id": 3,
+  "eval_name": "eval-mostly-good",
+  "prompt": "승인 제출 전에 최종 BRD 검토 한 번 해주세요: brd-reviewer-workspace/iteration-1/eval-mostly-good/input/sample-brd-good.md",
+  "assertions": [
+    {
+      "text": "BRD-REVIEW 파일과 BRD-QA 파일, 두 개의 출력 파일이 생성되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "섹션 12(용어집)에 ⚠️ 등급이 부여되었다 (3개 항목만 있어 빈약함)",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "섹션 7(제약&가정)에서 SAP 연동 가정의 '영향' 컬럼 공백이 이슈로 지적되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "Critical 이슈가 없거나 매우 적고, 전체적으로 승인 가능 수준이라는 긍정적 평가가 포함되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "Major 또는 Minor 질문이 도출되었다",
+      "passed": null,
+      "evidence": null
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "expectations": [
+    {
+      "text": "BRD-REVIEW 파일과 BRD-QA 파일, 두 개의 출력 파일이 생성되었다",
+      "passed": true,
+      "evidence": "outputs 디렉터리에 BRD-REVIEW-sample-brd-quality-issues.md와 BRD-QA-sample-brd-quality-issues.md 두 파일이 모두 존재한다."
+    },
+    {
+      "text": "Must Have 비율이 60% 초과로 Critical 이슈로 지적되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW 파일의 요구사항 품질 분석 테이블에 '| Must Have 비율 | **78%** (기능 요구사항 9개 중 7개) — 기준: 60% 이하 | ❌ Critical |'로 명시되어 있고, 핵심 보완 사항 Critical 섹션에도 'Must Have 비율 78% 초과'가 첫 번째 항목으로 기술되어 있다."
+    },
+    {
+      "text": "금지어구(가능하면, 빠르게, 사용자 친화적 중 하나 이상)가 요구사항 품질 문제로 식별되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW 파일 금지어구 상세 테이블에 '가능하면', '빠르게'(REQ-002), '사용자 친화적'(REQ-006) 세 가지 금지어구가 모두 원문과 함께 정확히 식별되어 있다."
+    },
+    {
+      "text": "What vs How 위반(Oracle DB 또는 기술 명세 포함)이 요구사항 결함으로 지적되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW 파일 What vs How 위반 상세 테이블에 'REQ-001 | \"Oracle DB를 **사용하여** 모든 재무 데이터를 저장\" → 구현 기술(Oracle) 명시'로 정확히 지적되었고, 개선 방향도 제시되어 있다."
+    },
+    {
+      "text": "섹션 6(비즈니스 요구사항)에 ⚠️ 또는 ❌ 등급이 부여되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW 파일 섹션별 평가 테이블에서 섹션 6 비즈니스 요구사항에 '❌ 미흡' 등급이 명시적으로 부여되어 있다."
+    },
+    {
+      "text": "요구사항 품질 분석 테이블(MoSCoW 비율, 금지어구, 복합요구사항 등)이 포함되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW 파일에 '요구사항 품질 분석' 섹션이 있으며, SMART 미충족/Must Have 비율/REQ-ID/금지어구/복합 요구사항(AND/및)/What vs How 위반/비기능 요구사항 누락 범주를 모두 포함한 종합 테이블이 존재한다. MoSCoW 상세 분포 테이블과 금지어구 상세 테이블도 별도로 제공된다."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {},
+  "timing": {},
+  "claims": [
+    {
+      "claim": "Must Have 비율이 78%이다 (기능 요구사항 9개 중 7개)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "입력 BRD의 REQ-001~007이 Must Have, REQ-008은 Should Have, REQ-009는 Could Have로 분류되어 있어 7/9 = 78%가 정확하다."
+    },
+    {
+      "claim": "금지어구가 3건이다",
+      "type": "factual",
+      "verified": true,
+      "evidence": "'가능하면'(REQ-002), '빠르게'(REQ-002), '사용자 친화적'(REQ-006) 3건이 원문 인용과 함께 정확히 열거되어 있다. 제약사항의 '최대한'도 추가로 식별되어 실제로는 4건이지만 요구사항 섹션 기준으로는 3건이 맞다."
+    },
+    {
+      "claim": "섹션 6 비즈니스 요구사항에 ❌ 미흡 등급을 부여했다",
+      "type": "quality",
+      "verified": true,
+      "evidence": "섹션별 평가 테이블에서 섹션 6만 유일하게 ❌ 미흡 등급을 받았으며, 복수의 Critical 품질 결함 근거가 명시되어 있다."
+    },
+    {
+      "claim": "BRD-QA 파일에 16개 질문이 포함되었다 (Critical 4, Major 9, Minor 3)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "BRD-QA 파일 헤더에 '총 질문 수 | 16개 (Critical: 4 / Major: 9 / Minor: 3)'로 명시되어 있고, Q1~Q16까지 실제로 존재한다."
+    }
+  ],
+  "user_notes_summary": {},
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "BRD-REVIEW 파일과 BRD-QA 파일, 두 개의 출력 파일이 생성되었다",
+        "reason": "파일 존재 여부만 확인하는 약한 assertion이다. 파일명 패턴(BRD-REVIEW-{input명}.md, BRD-QA-{input명}.md)이 입력 파일명을 반영하는지, 각 파일이 최소 일정 분량 이상의 실질적 내용을 포함하는지도 함께 검증하면 더 discriminating한 테스트가 된다."
+      },
+      {
+        "reason": "ROI 음수(-8%) 문제가 Critical 이슈로 지적되었는지 확인하는 assertion이 없다. 이는 with_skill 출력이 실제로 식별하는 중요한 문제이므로 eval에 추가할 가치가 있다."
+      },
+      {
+        "reason": "BRD-QA 파일에 Critical 질문들에 대한 담당자/기한 지정 안내가 포함되었는지 확인하는 assertion이 없다. 실무 활용 관점에서 중요한 출력 품질 요소이다."
+      }
+    ],
+    "overall": "6개 assertion 모두 실질적인 내용을 검증하며 의미 있는 결과를 도출한다. 파일 생성 assertion은 존재 확인에 그치지만 나머지 5개는 내용 정확성을 검증하고 있어 전반적으로 양호하다. ROI 음수 및 QA 파일 품질 검증 추가를 고려하면 더 강력한 eval이 될 수 있다."
+  }
+}

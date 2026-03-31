@@ -1,0 +1,37 @@
+{
+  "eval_id": 2,
+  "eval_name": "eval-quality-issues",
+  "prompt": "BRD 리뷰 부탁합니다. 파일: brd-reviewer-workspace/iteration-1/eval-quality-issues/input/sample-brd-quality-issues.md",
+  "assertions": [
+    {
+      "text": "BRD-REVIEW 파일과 BRD-QA 파일, 두 개의 출력 파일이 생성되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "Must Have 비율이 60% 초과로 Critical 이슈로 지적되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "금지어구(가능하면, 빠르게, 사용자 친화적 중 하나 이상)가 요구사항 품질 문제로 식별되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "What vs How 위반(Oracle DB 또는 기술 명세 포함)이 요구사항 결함으로 지적되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "섹션 6(비즈니스 요구사항)에 ⚠️ 또는 ❌ 등급이 부여되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "요구사항 품질 분석 테이블(MoSCoW 비율, 금지어구, 복합요구사항 등)이 포함되었다",
+      "passed": null,
+      "evidence": null
+    }
+  ]
+}

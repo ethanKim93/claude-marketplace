@@ -1,0 +1,80 @@
+{
+  "expectations": [
+    {
+      "text": "BRD-REVIEW 파일과 BRD-QA 파일, 두 개의 출력 파일이 생성되었다",
+      "passed": true,
+      "evidence": "outputs/ 디렉터리에 BRD-REVIEW-sample-brd-good.md 와 BRD-QA-sample-brd-good.md 두 파일 모두 존재하며, 각각 유의미한 내용을 담고 있다."
+    },
+    {
+      "text": "섹션 12(용어집)에 ⚠️ 등급이 부여되었다 (3개 항목만 있어 빈약함)",
+      "passed": true,
+      "evidence": "BRD-REVIEW-sample-brd-good.md 섹션별 평가 테이블에 '| 12. 용어집 | ⚠️ | UAT, ROI, FTE 3개 항목만 정의됨. 본문에 등장하는 … 도메인 핵심 용어 미정의.' 로 명시되어 있다."
+    },
+    {
+      "text": "섹션 7(제약&가정)에서 SAP 연동 가정의 '영향' 컬럼 공백이 이슈로 지적되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW 섹션 7 평가: '가정 테이블 3개 항목 중 첫 번째 가정(\"SAP HR 시스템 API 연동이 기술적으로 가능하다\")의 \"틀렸을 때 영향\" 컬럼이 비어 있음.' BRD-QA Q4에서도 동일 항목을 Minor 이슈로 별도 질문화."
+    },
+    {
+      "text": "Critical 이슈가 없거나 매우 적고, 전체적으로 승인 가능 수준이라는 긍정적 평가가 포함되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW '핵심 보완 사항' 섹션 Critical란: '해당 없음. 현재 BRD에는 승인을 차단하는 Critical 결함이 존재하지 않습니다.' BRD-QA 헤더: '본 BRD는 구조적으로 경영진 승인 제출 가능 수준입니다.'"
+    },
+    {
+      "text": "Major 또는 Minor 질문이 도출되었다",
+      "passed": true,
+      "evidence": "BRD-QA-sample-brd-good.md에 Major 질문 3개(Q1~Q3)와 Minor 질문 5개(Q4~Q8)가 구체적인 근거와 함께 도출되어 있다."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {},
+  "timing": {},
+  "claims": [
+    {
+      "claim": "전체 완성도: 완성 10개 / 부분 3개 / 미흡 0개",
+      "type": "factual",
+      "verified": true,
+      "evidence": "BRD-REVIEW 섹션별 평가 테이블에서 ✅ 10개(0·1·2·3·4·5·8·9·10·11), ⚠️ 3개(6·7·12) 확인됨."
+    },
+    {
+      "claim": "MoSCoW Must Have 비율이 60%로 경계선이라고 판단했다",
+      "type": "factual",
+      "verified": true,
+      "evidence": "BRD-REVIEW 요구사항 품질 분석 테이블에 'Must Have 6 / 60% / ⚠️ 경계선'으로 명시됨."
+    },
+    {
+      "claim": "NFR-S001의 'AES-256' 명시가 What vs How 위반이라고 지적했다",
+      "type": "quality",
+      "verified": true,
+      "evidence": "BRD-REVIEW 요구사항 품질 분석에 'What vs How 위반 1개 (NFR-S001: \"AES-256으로 암호화\"로 구현 방식 명시)'가 기재됨."
+    },
+    {
+      "claim": "Critical 이슈 0건",
+      "type": "factual",
+      "verified": true,
+      "evidence": "BRD-REVIEW '핵심 보완 사항 — Critical' 항목에 '*해당 없음*' 명시."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "섹션 12(용어집)에 ⚠️ 등급이 부여되었다 (3개 항목만 있어 빈약함)",
+        "reason": "이 assertion은 등급 기호 존재 여부만 확인한다. '이유가 용어 3개 빈약함'이라는 점을 검증하는 조건이 없으므로, 다른 이유로 ⚠️가 붙어도 통과한다. 등급 부여 근거(항목 수)도 함께 검증하도록 보완하면 더 discriminating해진다."
+      },
+      {
+        "reason": "섹션 6(비즈니스 요구사항)에 ⚠️ 등급이 부여되고 NFR 데이터 범주 누락이 Major 이슈로 지적된 점은 어떤 assertion도 확인하지 않는다. 스킬이 이 항목을 발견하는 것이 중요한 품질 신호임에도 eval에서 누락되어 있다."
+      }
+    ],
+    "overall": "5개 assertion 모두 핵심 동작을 잘 커버하고 있으나, 등급 부여 근거 검증 및 NFR 데이터 누락 지적 assertion 추가를 고려할 만하다."
+  }
+}

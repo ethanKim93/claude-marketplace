@@ -20,11 +20,11 @@
     {
       "name": "product-management",
       "source": "./plugins/product-management",
-      "description": "제품 관리 스킬 모음 - PRD 작성, 요구사항 정의, 사용자 스토리 도출",
+      "description": "제품 관리 전체 라이프사이클 스킬 모음 - BRD/PRD 작성·검토, 로드맵 생성, 태스크 실행, 릴리즈 노트, 회고",
       "category": "product",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "author": "kimminhyeon",
-      "keywords": ["prd", "product-management", "requirements", "user-story", "okr", "acceptance-criteria"]
+      "keywords": ["prd", "brd", "product-management", "requirements", "user-story", "roadmap", "retrospective", "release-notes", "pipeline"]
     },
     {
       "name": "productivity",
@@ -34,6 +34,15 @@
       "version": "1.0.0",
       "author": "kimminhyeon",
       "keywords": ["folder", "directory", "organize", "cleanup", "file-management", "productivity"]
+    },
+    {
+      "name": "database",
+      "source": "./plugins/database",
+      "description": "Oracle DB 설계 스킬 — 정규화, 반정규화, 네이밍 컨벤션, 파티션 키 설계, DDL 생성을 단계별 안내",
+      "category": "development",
+      "version": "1.0.0",
+      "author": "kimminhyeon",
+      "keywords": ["oracle", "database", "db-design", "ddl", "erd", "normalization", "partitioning", "naming-convention", "standard-dictionary"]
     }
   ]
 }

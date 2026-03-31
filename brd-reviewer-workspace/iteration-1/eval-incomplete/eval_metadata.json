@@ -1,0 +1,37 @@
+{
+  "eval_id": 1,
+  "eval_name": "eval-incomplete",
+  "prompt": "이 BRD 문서를 검토해줘. 파일 경로: brd-reviewer-workspace/iteration-1/eval-incomplete/input/sample-brd-incomplete.md",
+  "assertions": [
+    {
+      "text": "BRD-REVIEW 파일과 BRD-QA 파일, 두 개의 출력 파일이 생성되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "섹션 8(리스크), 10(비용-편익), 11(승인) 중 적어도 두 개에 ❌ 등급이 부여되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "섹션 3(프로젝트 목표)에 SMART 미충족으로 인한 ⚠️ 또는 ❌ 등급이 부여되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "Critical 심각도 질문이 1개 이상 포함되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "Must Have 100% 또는 과도한 Must Have 비율이 Critical 이슈로 지적되었다",
+      "passed": null,
+      "evidence": null
+    },
+    {
+      "text": "비기능 요구사항의 금지어구(빠르게, 사용자 친화적)가 이슈로 식별되었다",
+      "passed": null,
+      "evidence": null
+    }
+  ]
+}

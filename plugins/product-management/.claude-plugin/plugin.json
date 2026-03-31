@@ -1,11 +1,15 @@
 {
   "name": "product-management",
-  "version": "1.0.0",
-  "description": "제품 관리 스킬 모음. PRD(제품 요구사항 문서) 작성, 사용자 스토리 도출, 요구사항 우선순위 결정을 지원합니다.",
+  "version": "2.0.0",
+  "description": "제품 관리 스킬 모음. BRD/PRD 작성·검토, 로드맵 생성, 태스크 실행, 릴리즈 노트, 회고까지 전체 제품 관리 라이프사이클을 지원합니다.",
   "author": "kimminhyeon",
   "license": "MIT",
-  "keywords": ["prd", "product-management", "requirements", "user-story", "okr", "acceptance-criteria"],
+  "keywords": ["prd", "brd", "product-management", "requirements", "user-story", "roadmap", "retrospective", "release-notes", "pipeline"],
   "commands": [
+    {
+      "name": "pm-pipeline",
+      "source": "./skills/pm-pipeline"
+    },
     {
       "name": "prd-writer",
       "source": "./skills/prd-writer"
@@ -17,6 +21,10 @@
     {
       "name": "brd-reviewer",
       "source": "./skills/brd-reviewer"
+    },
+    {
+      "name": "brd-to-prd-converter",
+      "source": "./skills/brd-to-prd-converter"
     },
     {
       "name": "ppt-maker",
@@ -33,6 +41,14 @@
     {
       "name": "task-runner",
       "source": "./skills/task-runner"
+    },
+    {
+      "name": "release-notes-generator",
+      "source": "./skills/release-notes-generator"
+    },
+    {
+      "name": "retro-generator",
+      "source": "./skills/retro-generator"
     }
   ]
 }

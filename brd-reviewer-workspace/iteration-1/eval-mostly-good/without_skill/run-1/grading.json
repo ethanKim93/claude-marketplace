@@ -1,0 +1,75 @@
+{
+  "expectations": [
+    {
+      "text": "BRD-REVIEW 파일과 BRD-QA 파일, 두 개의 출력 파일이 생성되었다",
+      "passed": true,
+      "evidence": "outputs/ 디렉터리에 BRD-REVIEW-baseline.md 와 BRD-QA-baseline.md 두 파일 모두 존재하며, 각각 실질적인 내용을 포함하고 있다."
+    },
+    {
+      "text": "섹션 12(용어집)에 ⚠️ 등급이 부여되었다 (3개 항목만 있어 빈약함)",
+      "passed": false,
+      "evidence": "BRD-REVIEW-baseline.md는 섹션별 평가에 ✅/⚠️ 등급 체계를 사용하지 않고 PASS/DEFECT 판정 방식을 사용한다. Section 12는 'DEFECT — 용어집 항목 부족'으로 기술되어 있으며, ⚠️ 기호는 어디에도 나타나지 않는다."
+    },
+    {
+      "text": "섹션 7(제약&가정)에서 SAP 연동 가정의 '영향' 컬럼 공백이 이슈로 지적되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW-baseline Section 7: 'DEFECT — 가정 테이블 \"영향\" 컬럼 미완성 — SAP HR 시스템 API 연동이 기술적으로 가능하다 영향란이 공백임.' BRD-QA-baseline D-4 항목도 'FAIL — 1번 항목(SAP 연동 가정) 영향란 공백'으로 명시."
+    },
+    {
+      "text": "Critical 이슈가 없거나 매우 적고, 전체적으로 승인 가능 수준이라는 긍정적 평가가 포함되었다",
+      "passed": true,
+      "evidence": "BRD-REVIEW-baseline '4. 최종 판정'에 '조건부 승인 권고 — D-001, D-002 수정 후 재검토 없이 승인 가능' 명시. BRD-QA-baseline '승인 권고'에도 '조건부 승인 가능' 표현이 있어 전체적으로 긍정적 평가가 포함됨. 다만 'Critical 이슈 없음'을 명시적으로 선언하지는 않고 '결함(Defect) 2건'이라는 표현을 사용함."
+    },
+    {
+      "text": "Major 또는 Minor 질문이 도출되었다",
+      "passed": false,
+      "evidence": "BRD-QA-baseline은 QA 체크리스트(PASS/WARN/FAIL 항목) 형식으로 작성되었으며 'Major 질문', 'Minor 질문' 섹션이 없다. 이해관계자에게 답변을 요청하는 질문 목록이 도출되지 않았고, 개선 권고사항이 결함 목록과 체크리스트 형태로만 제시되었다."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 2,
+    "total": 5,
+    "pass_rate": 0.6
+  },
+  "execution_metrics": {},
+  "timing": {},
+  "claims": [
+    {
+      "claim": "결함(Defect) 2건과 개선사항(Improvement) 4건이 확인됨",
+      "type": "factual",
+      "verified": true,
+      "evidence": "BRD-REVIEW-baseline '결함 목록'에 D-001(가정 영향 공백), D-002(용어집 부족) 2건, '개선 권고'에 I-001~I-004 4건이 명시되어 있다."
+    },
+    {
+      "claim": "PASS 28건, WARN 4건, FAIL 3건",
+      "type": "factual",
+      "verified": true,
+      "evidence": "BRD-QA-baseline 결과 요약 테이블에 'PASS 28건 / WARN 4건 / FAIL 3건' 기재. 단, FAIL 3건 중 F-2와 F-3은 모두 용어집 관련으로 실질적으로 2개의 이슈다."
+    },
+    {
+      "claim": "SAP 연동 리스크와 가정이 연결됨을 지적",
+      "type": "quality",
+      "verified": true,
+      "evidence": "BRD-QA-baseline E-4 항목: 'SAP 연동 가정 영향 공백으로 인한 리스크-가정 연결 불완전 (F-FAIL-1 해결 시 자동 해소)' WARN으로 명시."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "섹션 12(용어집)에 ⚠️ 등급이 부여되었다 (3개 항목만 있어 빈약함)",
+        "reason": "이 assertion은 스킬 특유의 출력 형식(⚠️ 등급 기호)을 명시적으로 요구하기 때문에 베이스라인에서 FAIL이 된다. 실질적인 내용(용어집 빈약 지적)은 베이스라인도 올바르게 수행했다. 형식보다 내용을 검증하는 방향으로 재작성하거나, 형식 검증이 목적이라면 의도를 명확히 할 필요가 있다."
+      },
+      {
+        "assertion": "Major 또는 Minor 질문이 도출되었다",
+        "reason": "베이스라인은 개선 권고 항목을 제시하지만 이해관계자 답변을 받기 위한 질문 목록 형식은 아니다. 이 assertion이 스킬의 핵심 가치(이해관계자 질의 생성)를 잘 포착하고 있으나, '질문 도출'의 정의를 더 명확히 하면 판정 일관성이 높아진다."
+      }
+    ],
+    "overall": "베이스라인도 핵심 이슈(SAP 가정 영향 공백, 용어집 빈약)를 정확히 발견하며 높은 품질을 보인다. with_skill과의 차이는 구조화된 등급 체계, 섹션별 ⚠️/✅ 분류, 이해관계자 질문 목록 생성 등 출력 형식과 액션 아이템 구체성에서 나타난다."
+  }
+}
