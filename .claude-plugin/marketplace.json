@@ -1,0 +1,30 @@
+{
+  "name": "claude-marketplace",
+  "owner": {
+    "name": "kimminhyeon"
+  },
+  "metadata": {
+    "description": "개인 스킬 및 서브에이전트 마켓플레이스 - Claude Studio 워크플로우와 아키텍처 설계 도구 모음",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "video-production",
+      "source": "./plugins/video-production",
+      "description": "AI 기반 영상 제작 자동화 스킬 모음 (대본 생성, TTS, 이미지 생성, 영상 합성)",
+      "category": "media",
+      "version": "1.0.0",
+      "author": "kimminhyeon",
+      "keywords": ["video", "ai", "automation", "ffmpeg", "tts", "gemini"]
+    },
+    {
+      "name": "architecture",
+      "source": "./plugins/architecture",
+      "description": "DDD 기반 소프트웨어 아키텍처 설계 스킬",
+      "category": "development",
+      "version": "1.0.0",
+      "author": "kimminhyeon",
+      "keywords": ["ddd", "architecture", "bounded-context", "aggregate", "hexagonal"]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "architecture",
+  "version": "1.0.0",
+  "description": "DDD(도메인 주도 설계) 기반 소프트웨어 아키텍처 설계 스킬. Bounded Context 도출, Aggregate 설계, Domain Event 식별, 헥사고날 아키텍처 구조 제안을 지원합니다.",
+  "author": "kimminhyeon",
+  "license": "MIT",
+  "keywords": ["ddd", "architecture", "bounded-context", "aggregate", "hexagonal", "domain-events"],
+  "commands": [
+    {
+      "name": "ddd",
+      "source": "./skills/ddd"
+    }
+  ]
+}

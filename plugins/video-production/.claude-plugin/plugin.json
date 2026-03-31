@@ -1,0 +1,62 @@
+{
+  "name": "video-production",
+  "version": "1.0.0",
+  "description": "AI 기반 영상 제작 자동화 스킬 모음. Gemini API, FFmpeg, Whisper를 활용하여 대본 생성부터 최종 영상 합성까지 전 과정을 자동화합니다.",
+  "author": "kimminhyeon",
+  "license": "MIT",
+  "keywords": ["video", "ai", "automation", "ffmpeg", "tts", "gemini", "whisper"],
+  "commands": [
+    {
+      "name": "create-video-auto",
+      "source": "./skills/create-video-auto"
+    },
+    {
+      "name": "batch-video",
+      "source": "./skills/batch-video"
+    },
+    {
+      "name": "compose-video",
+      "source": "./skills/compose-video"
+    },
+    {
+      "name": "draft-video",
+      "source": "./skills/draft-video"
+    },
+    {
+      "name": "generate-briefing",
+      "source": "./skills/generate-briefing"
+    },
+    {
+      "name": "generate-image",
+      "source": "./skills/generate-image"
+    },
+    {
+      "name": "generate-script",
+      "source": "./skills/generate-script"
+    },
+    {
+      "name": "generate-subtitle",
+      "source": "./skills/generate-subtitle"
+    },
+    {
+      "name": "generate-tts",
+      "source": "./skills/generate-tts"
+    },
+    {
+      "name": "preview-image",
+      "source": "./skills/preview-image"
+    },
+    {
+      "name": "read-briefing",
+      "source": "./skills/read-briefing"
+    },
+    {
+      "name": "run-pipeline",
+      "source": "./skills/run-pipeline"
+    },
+    {
+      "name": "run-test",
+      "source": "./skills/run-test"
+    }
+  ]
+}
