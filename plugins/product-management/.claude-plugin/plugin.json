@@ -23,6 +23,10 @@
       "source": "./skills/brd-reviewer"
     },
     {
+      "name": "ddd-to-brd-converter",
+      "source": "./skills/ddd-to-brd-converter"
+    },
+    {
       "name": "brd-to-prd-converter",
       "source": "./skills/brd-to-prd-converter"
     },

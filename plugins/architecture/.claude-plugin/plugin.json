@@ -9,6 +9,10 @@
     {
       "name": "ddd",
       "source": "./skills/ddd"
+    },
+    {
+      "name": "ddd-classifier",
+      "source": "./skills/ddd-classifier"
     }
   ]
 }
