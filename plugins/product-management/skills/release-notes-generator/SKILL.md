@@ -44,11 +44,13 @@ allowed-tools:
 
    ```
    우선순위 1: 사용자가 명시한 경로
-   우선순위 2: docs/TASKS-*.md (Glob 검색)
-   우선순위 3: docs/PRD-*.md (Glob 검색)
-   우선순위 4: docs/BRD-*.md (Glob 검색, 선택사항)
+   우선순위 2: docs/{domain}/*/TASKS.md (Glob: docs/*/*/TASKS.md — 기능별 TASKS 전체 순회)
+   우선순위 3: docs/{domain}/PRD.md (Glob: docs/*/PRD.md)
+   우선순위 4: docs/{domain}/BRD.md (Glob: docs/*/BRD.md, 선택사항)
    우선순위 5: git log (Bash로 최근 커밋 조회)
    ```
+
+   도메인이 여러 개 발견되면 특정 도메인을 선택할지, 전체를 대상으로 할지 사용자에게 확인한다.
 
 2. 파일 발견 현황을 사용자에게 보고한다:
    - TASKS.md 없음 → 사용자에게 경로 요청 또는 완료된 기능 목록 입력 요청
@@ -112,7 +114,7 @@ git log --oneline --since="스프린트 시작일" --until="오늘"
 
 **목표**: 사용자·이해관계자·개발팀을 위한 3레이어 릴리즈 노트를 작성한다.
 
-파일명: `docs/RELEASE-NOTES-{버전 또는 날짜}.md`
+파일명: `docs/{domain}/RELEASE-NOTES-{버전 또는 날짜}.md`
 
 ---
 

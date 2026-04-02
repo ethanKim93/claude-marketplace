@@ -118,9 +118,11 @@ Phase 1에서 사용자에게 이 사실을 알리고 의존성을 반드시 확
 
 1. **PRD 파일 찾기**
    - 사용자가 파일 경로를 제공했으면 그 파일을 Read한다.
-   - 제목이나 키워드만 제공했으면 Glob으로 `docs/PRD-*.md`를 탐색한다.
+   - 도메인명만 제공했으면 `docs/{domain}/PRD.md` 경로를 직접 시도한다.
+   - 도메인을 특정하지 않았으면 Glob으로 `docs/*/PRD.md` 패턴을 탐색한다.
    - 여러 파일이 나오면 목록을 보여주고 어떤 PRD를 사용할지 선택하게 한다.
    - `docs/` 디렉터리가 없으면 Glob으로 `**/*.md`에서 PRD 패턴을 탐색한다.
+   - PRD 파일 경로에서 도메인명을 추출한다: `docs/{domain}/PRD.md` → `{domain}`
 
 2. **포맷 감지 및 데이터 추출**
    - 위의 파싱 규칙에 따라 표준/경량 PRD를 판별한다.
@@ -130,11 +132,21 @@ Phase 1에서 사용자에게 이 사실을 알리고 의존성을 반드시 확
    - 섹션 11의 마일스톤과 날짜를 추출한다 (없으면 Phase 2에서 사용자에게 시작일 질문).
    - 섹션 12의 리스크 목록을 추출한다.
 
-3. **Phase 0 요약 제시**
+3. **기능 챕터 파싱**
+   섹션 7에서 `### 7.N Feature: {name}` 패턴을 탐지한다:
+   - 패턴이 **존재하면** → 기능 챕터 모드: 각 챕터별로 FR 목록을 분리 추출하고, Feature 이름을 kebab-case로 변환하여 `{feature-key}`로 저장한다.
+     - 예: `### 7.1 Feature: User Login` → `{feature-key}` = `user-login`
+     - 각 챕터에 속한 FR ID 목록을 매핑 테이블로 구성한다.
+   - 패턴이 **없으면** → 단일 기능 모드: 전체 FR을 하나의 기능 그룹으로 처리하고 `{feature-key}` = `default`로 설정한다.
+
+4. **Phase 0 요약 제시**
    ```
-   ✅ PRD 로딩 완료: {PRD 파일명}
+   ✅ PRD 로딩 완료: {PRD 파일 경로}
+   - 도메인: {domain}
    - 포맷: 표준 13섹션 / 경량 5섹션
    - FR 수: P0({N}개) / P1({N}개) / P2({N}개)
+   - 기능 챕터: {N}개 발견 / 없음 (단일 기능 모드)
+     {챕터가 있을 경우: 각 챕터명과 FR 수 나열}
    - 명시적 의존성: {N}개 발견
    - 마일스톤: {N}개 / 타임라인 정보 {있음/없음}
    - 리스크 항목: {N}개
@@ -269,12 +281,23 @@ Phase 1에서 사용자에게 이 사실을 알리고 의존성을 반드시 확
       더 작은 단위로 분해하는 것을 권장합니다.
    ```
 
-6. **태스크 요약 제시 및 사용자 확인**
+6. **기능 챕터별 태스크 그룹화**
+   기능 챕터 모드인 경우 각 태스크를 해당 FR이 속한 기능 챕터에 매핑한다:
+   - `{feature-key}` → [T-{FR번호}-{순번}, ...] 형태의 그룹 목록 구성
+   - 기능 챕터를 넘나드는 의존성(cross-feature dependency)은 별도로 표시한다.
+   - 단일 기능 모드에서는 그룹화 없이 전체 태스크를 단일 목록으로 유지한다.
+
+7. **태스크 요약 제시 및 사용자 확인**
    ```
    총 {N}개 태스크 생성:
    - P0: {N}개 ({N} person-days 예상)
    - P1: {N}개 ({N} person-days 예상)
    - P2: {N}개 ({N} person-days 예상)
+
+   기능 챕터 모드인 경우:
+   - {feature-key}: {N}개 태스크
+   - {feature-key}: {N}개 태스크
+   ...
    ```
    "태스크 분해 결과입니다. 추가하거나 수정할 태스크가 있나요?
    확인되면 Phase 4(문서 생성)로 진행합니다."
@@ -283,41 +306,88 @@ Phase 1에서 사용자에게 이 사실을 알리고 의존성을 반드시 확
 
 ## Phase 4: 문서 생성
 
-**목표**: 확인된 내용을 기반으로 두 개의 문서를 생성하고 다음 단계를 안내한다.
+**목표**: 확인된 내용을 기반으로 도메인 구조에 맞춰 문서를 생성하고 다음 단계를 안내한다.
 
-1. **파일명 결정**
-   PRD 파일명에서 제목 부분을 추출한다.
-   예: `docs/PRD-user-auth.md` → `{title}` = `user-auth`
-   - 로드맵 파일: `docs/ROADMAP-{title}.md`
-   - 태스크 파일: `docs/TASKS-{title}.md`
+1. **출력 경로 결정**
+   Phase 0에서 추출한 `{domain}`과 Phase 3에서 구성한 `{feature-key}` 목록을 기반으로 경로를 결정한다:
+   - 로드맵 파일: `docs/{domain}/ROADMAP.md` (도메인 레벨, 항상 단일 파일)
+   - 태스크 파일 (기능 챕터 모드): 기능별 N개 파일
+     - `docs/{domain}/{feature-key}/TASKS.md`
+     - 예: `docs/user-auth/login/TASKS.md`, `docs/user-auth/profile/TASKS.md`
+   - 태스크 파일 (단일 기능 모드): 1개 파일
+     - `docs/{domain}/tasks/default/TASKS.md`
 
-2. **로드맵 문서 생성**
+2. **로드맵 문서 생성** (`docs/{domain}/ROADMAP.md`)
    `references/roadmap-template.md`의 구조를 따라 작성한다.
    Phase 0-3에서 분석한 모든 내용을 채워넣는다.
    Mermaid 다이어그램(의존성 플로우차트, Gantt 차트) 모두 포함한다.
+   기능 챕터 모드인 경우 다음 항목을 ROADMAP.md에 추가한다:
+   - 기능별 섹션 분리 (각 Feature의 FR 목록, 의존성, 태스크 수)
+   - 기능 간 cross-feature 의존성 표시
+   - 각 기능의 TASKS.md 파일 경로 링크 목록:
+     ```
+     ## 기능별 태스크 파일
+     - [{feature-key}](../{feature-key}/TASKS.md): {N}개 태스크
+     ```
 
 3. **태스크 문서 생성**
    `references/task-template.md`의 구조를 따라 작성한다.
-   FR별 태스크 목록, 의존성 매트릭스, RICE 테이블, 스프린트 계획을 모두 포함한다.
+
+   - **기능 챕터 모드**: 각 `{feature-key}`별로 독립적인 TASKS.md를 생성한다.
+     - 해당 기능에 속한 FR에서 파생된 태스크만 포함한다.
+     - 다른 기능의 FR에 대한 cross-feature 의존성은 참조 링크로 표시한다:
+       ```
+       선행 조건: [T-01-01](../../{other-feature}/TASKS.md#T-01-01) (cross-feature)
+       ```
+     - 각 파일 상단에 소속 정보를 명시한다:
+       ```
+       도메인: {domain}
+       기능: {feature-key}
+       ROADMAP 참조: ../ROADMAP.md
+       ```
+   - **단일 기능 모드**: FR별 태스크 목록, 의존성 매트릭스, RICE 테이블, 스프린트 계획을 모두 포함한다.
 
 4. **완료 요약 제시**
+
+   기능 챕터 모드인 경우:
    ```
    ✅ 문서 생성 완료
 
-   📄 docs/ROADMAP-{title}.md
+   📄 docs/{domain}/ROADMAP.md
+      - Phase NOW: {N}개 FR ({시작일}~{종료일})
+      - Phase NEXT: {N}개 FR
+      - Phase LATER: {N}개 FR
+      - 크리티컬 패스: {FR-01 → FR-03 → ...}
+      - 총 예상 기간: {N}주 (리스크 버퍼 포함)
+      - 기능 {N}개 포함
+
+   📋 기능별 TASKS.md ({N}개 파일):
+      - docs/{domain}/{feature-key-1}/TASKS.md ({N}개 태스크, {N} person-days)
+      - docs/{domain}/{feature-key-2}/TASKS.md ({N}개 태스크, {N} person-days)
+      ...
+   ```
+
+   단일 기능 모드인 경우:
+   ```
+   ✅ 문서 생성 완료
+
+   📄 docs/{domain}/ROADMAP.md
       - Phase NOW: {N}개 FR ({시작일}~{종료일})
       - Phase NEXT: {N}개 FR
       - Phase LATER: {N}개 FR
       - 크리티컬 패스: {FR-01 → FR-03 → ...}
       - 총 예상 기간: {N}주 (리스크 버퍼 포함)
 
-   📋 docs/TASKS-{title}.md
+   📋 docs/{domain}/tasks/default/TASKS.md
       - 총 {N}개 태스크 ({N} person-days)
       - {N} 스프린트 분량 (2주 기준)
+   ```
 
+   공통 다음 단계:
+   ```
    다음 단계:
    1. 팀 리뷰 미팅에서 ROADMAP 문서를 공유하세요
-   2. TASKS 문서로 담당자를 배정하세요
+   2. 기능별 TASKS 문서로 담당자를 배정하세요
    3. Planning Poker로 T-shirt 사이징을 검증하세요
    4. Jira/Linear에 Phase NOW 태스크를 임포트하세요
    ```

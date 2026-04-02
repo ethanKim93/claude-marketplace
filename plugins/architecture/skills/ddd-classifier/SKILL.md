@@ -67,7 +67,7 @@ Phase 4: 문서 생성 및 저장
    - BRD/PRD/설계서/아키텍처 문서가 있으면 → **0-B 문서 모드**
    - 이미 도메인이 분류된 문서도 0-B로 처리 (내용 추출 후 동일 템플릿으로 재생성)
 2. **프로젝트명**: 결과 문서 파일명에 사용
-3. **저장 위치**: 문서를 저장할 경로 (기본값: `docs/DDD-Classification-{프로젝트명}.md`)
+3. **저장 위치**: 문서를 저장할 경로 (기본값: `docs/_project/DDD-Classification.md`)
 
 두 가지 이상을 한꺼번에 받아도 좋다 — 예를 들어 소스코드와 BRD가 둘 다 있으면 둘 다 활용한다.
 
@@ -285,12 +285,13 @@ Grep으로 핵심 패턴 검색:
 ### 파일 저장
 
 ```
-저장 경로: docs/DDD-Classification-{프로젝트명}.md
+저장 경로: docs/_project/DDD-Classification.md
+- docs/_project/ 디렉터리가 없으면 Bash로 mkdir -p docs/_project 를 실행하여 생성한다.
 (사용자가 다른 경로를 지정하면 그 경로 사용)
 ```
 
 저장 후 사용자에게 알린다:
-> "문서가 저장되었습니다: `docs/DDD-Classification-{프로젝트명}.md`
+> "문서가 저장되었습니다: `docs/_project/DDD-Classification.md`
 > 
 > 이 문서를 바탕으로 특정 바운디드 컨텍스트의 전술적 설계(Aggregate 상세 설계, 헥사고날 아키텍처 패키지 구조 등)가 필요하시면 `/ddd` 스킬을 사용하세요."
 

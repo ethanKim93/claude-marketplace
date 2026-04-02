@@ -53,6 +53,10 @@
     {
       "name": "retro-generator",
       "source": "./skills/retro-generator"
+    },
+    {
+      "name": "req-intake",
+      "source": "./skills/req-intake"
     }
   ]
 }
