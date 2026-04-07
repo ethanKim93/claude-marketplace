@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "react-integration-test", "runs": [{"id": "eval-0-login-flow-with_skill", "prompt": "\uc6b0\ub9ac React \uc571\uc5d0 \ub85c\uadf8\uc778 \ud1b5\ud569 \ud14c\uc2a4\ud2b8\ub97c \uc791\uc131\ud574\uc918...", "eval_id": 0, "outputs": [{"name": "auth.integration.test.tsx", "type": "text", "content": "// src/__tests__/auth.integration.test.tsx\n// \ub85c\uadf8\uc778 \ud50c\ub85c\uc6b0 \ud1b5\ud569 \ud14c\uc2a4\ud2b8 \u2014 Vite + React 18 + React Router v6 + Redux Toolkit + MSW v2\nimport { describe, test, expect, beforeAll, afterEach, afterAll } from 'vitest'\nimport { screen } from '@testing-library/react'\nimport { http, HttpResponse } from 'msw'\nimport { setupServer } from 'msw/node'\nimport { renderWithProviders, userEvent } from '../test-utils'\nimport { handlers } from '../mocks/handlers'\n\n// ----------------------------------------------------------------\n// App \ucef4\ud3ec\ub10c\ud2b8 \uad6c\uc870 (\uc2e4\uc81c \ud504\ub85c\uc81d\ud2b8\uc5d0 \ub9de\uac8c import \uacbd\ub85c \uc218\uc815)\n// ----------------------------------------------------------------\n// \uc544\ub798 import\ub294 \uc2e4\uc81c \ud504\ub85c\uc81d\ud2b8\uc758 \ucef4\ud3ec\ub10c\ud2b8\ub97c \uac00\ub9ac\ucf1c\uc57c \ud569\ub2c8\ub2e4.\n// \uc608:\n//   import App from '../App'\n//   import { LoginPage } from '../pages/LoginPage'\n//   import { ProtectedRoute } from '../components/ProtectedRoute'\n//\n// \uc774 \ud14c\uc2a4\ud2b8 \ud30c\uc77c\uc740 App\uc744 \uc9c4\uc785\uc810\uc73c\ub85c \uc0ac\uc6a9\ud569\ub2c8\ub2e4.\n// App\uc774 React Router Routes/Route\ub97c \ud3ec\ud568\ud558\uace0,\n// /login \u2192 LoginPage, /dashboard \u2192 DashboardPage (ProtectedRoute \uc548\uc5d0)\n// \uad6c\uc870\ub97c \uac00\uc9c4\ub2e4\uace0 \uac00\uc815\ud569\ub2c8\ub2e4.\n//\n// import App from '../App'\n// ----------------------------------------------------------------\n\n// ----------------------------------------------------------------\n// MSW \uc11c\ubc84\n// ----------------------------------------------------------------\nconst server = setupServer(...handlers)\n\nbeforeAll(() => server.listen({ onUnhandledRequest: 'error' }))\nafterEach(() => server.resetHandlers())   // \ud14c\uc2a4\ud2b8 \uac04 \ud578\ub4e4\ub7ec \uc624\ubc84\ub77c\uc774\ub4dc \ucd08\uae30\ud654\nafterAll(() => server.close())\n\n// ----------------------------------------------------------------\n// \ud14c\uc2a4\ud2b8 \uc2a4\uc704\ud2b8\n// ----------------------------------------------------------------\n\ndescribe('\ub85c\uadf8\uc778 \ud50c\ub85c\uc6b0 \ud1b5\ud569 \ud14c\uc2a4\ud2b8', () => {\n  /**\n   * \uc2dc\ub098\ub9ac\uc624 1: \ub85c\uadf8\uc778 \uc131\uacf5 \u2192 /dashboard \uc774\ub3d9\n   *\n   * 1. /login \ud398\uc774\uc9c0 \ub80c\ub354\ub9c1\n   * 2. \uc774\uba54\uc77c\u00b7\ube44\ubc00\ubc88\ud638 \uc785\ub825\n   * 3. \ub85c\uadf8\uc778 \ubc84\ud2bc \ud074\ub9ad\n   * 4. MSW\uac00 200 \uc751\ub2f5\n   * 5. /dashboard\ub85c \uc774\ub3d9 \ud655\uc778\n   */\n  test('\uc62c\ubc14\ub978 \uc790\uaca9\uc99d\uba85\uc73c\ub85c \ub85c\uadf8\uc778\ud558\uba74 /dashboard\ub85c \uc774\ub3d9\ud55c\ub2e4', async () => {\n    const user = userEvent.setup()\n\n    // App \uc804\uccb4\ub97c /login \uacbd\ub85c\uc5d0\uc11c \ub80c\ub354\ub9c1\n    // renderWithProviders(<App />, { route: '/login' })\n    //\n    // --- \uc2e4\uc81c \ucef4\ud3ec\ub10c\ud2b8\uac00 \uc5c6\uc73c\ubbc0\ub85c \uc778\ub77c\uc778 App \ub300\uc5ed(stub)\uc73c\ub85c \uc2dc\uc5f0 ---\n    const { Routes, Route, Navigate, useNavigate } = await import('react-router-dom')\n    const { useDispatch, useSelector } = await import('react-redux')\n    const { setCredentials } = await import('../test-utils')\n    const React = await import('react')\n\n    function LoginPage() {\n      const dispatch = useDispatch()\n      const navigate = useNavigate()\n      const [email, setEmail] = React.useState('')\n      const [password, setPassword] = React.useState('')\n      const [error, setError] = React.useState<string | null>(null)\n\n      async function handleSubmit(e: React.FormEvent) {\n        e.preventDefault()\n        setError(null)\n        try {\n          const res = await fetch('/api/auth/login', {\n            method: 'POST',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify({ email, password }),\n          })\n          if (!res.ok) {\n            const data = await res.json()\n            setError(data.message)\n            return\n          }\n          const data = await res.json()\n          dispatch(setCredentials({ token: data.token, user: data.user }))\n          navigate('/dashboard')\n        } catch {\n          setError('\ub124\ud2b8\uc6cc\ud06c \uc624\ub958\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4')\n        }\n      }\n\n      return (\n        <form onSubmit={handleSubmit}>\n          <h1>\ub85c\uadf8\uc778</h1>\n          <label htmlFor=\"email\">\uc774\uba54\uc77c</label>\n          <input\n            id=\"email\"\n            type=\"email\"\n            value={email}\n            onChange={(e) => setEmail(e.target.value)}\n          />\n          <label htmlFor=\"password\">\ube44\ubc00\ubc88\ud638</label>\n          <input\n            id=\"password\"\n            type=\"password\"\n            value={password}\n            onChange={(e) => setPassword(e.target.value)}\n          />\n          {error && <p role=\"alert\">{error}</p>}\n          <button type=\"submit\">\ub85c\uadf8\uc778</button>\n        </form>\n      )\n    }\n\n    function DashboardPage() {\n      return <main><h1>\ub300\uc2dc\ubcf4\ub4dc</h1><p>\ud658\uc601\ud569\ub2c8\ub2e4</p></main>\n    }\n\n    function ProtectedRoute({ children }: { children: React.ReactNode }) {\n      const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated)\n      return isAuthenticated ? <>{children}</> : <Navigate to=\"/login\" replace />\n    }\n\n    function TestApp() {\n      return (\n        <Routes>\n          <Route path=\"/login\" element={<LoginPage />} />\n          <Route\n            path=\"/dashboard\"\n            element={\n              <ProtectedRoute>\n                <DashboardPage />\n              </ProtectedRoute>\n            }\n          />\n          <Route path=\"*\" element={<Navigate to=\"/login\" replace />} />\n        </Routes>\n      )\n    }\n    // --- stub \ub05d ---\n\n    renderWithProviders(<TestApp />, { route: '/login' })\n\n    // \ud3fc \uc694\uc18c \ud655\uc778\n    expect(screen.getByRole('heading', { name: '\ub85c\uadf8\uc778' })).toBeInTheDocument()\n\n    // \uc0ac\uc6a9\uc790 \uc785\ub825\n    await user.type(screen.getByLabelText('\uc774\uba54\uc77c'), 'user@example.com')\n    await user.type(screen.getByLabelText('\ube44\ubc00\ubc88\ud638'), 'password123')\n    await user.click(screen.getByRole('button', { name: /\ub85c\uadf8\uc778/i }))\n\n    // MSW \uc751\ub2f5 \ucc98\ub9ac \ud6c4 \ub300\uc2dc\ubcf4\ub4dc \uc774\ub3d9 \ud655\uc778 (\ube44\ub3d9\uae30 \ucffc\ub9ac)\n    expect(await screen.findByRole('heading', { name: '\ub300\uc2dc\ubcf4\ub4dc' })).toBeInTheDocument()\n\n    // \ub85c\uadf8\uc778 \ud3fc\uc774 \ub354 \uc774\uc0c1 \ud45c\uc2dc\ub418\uc9c0 \uc54a\uc74c\n    expect(screen.queryByLabelText('\uc774\uba54\uc77c')).not.toBeInTheDocument()\n  })\n\n  /**\n   * \uc2dc\ub098\ub9ac\uc624 2: \ub85c\uadf8\uc778 \uc2e4\ud328 \u2192 \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud45c\uc2dc\n   *\n   * 1. MSW \ud578\ub4e4\ub7ec\ub97c 401 \uc751\ub2f5\uc73c\ub85c \uc624\ubc84\ub77c\uc774\ub4dc\n   * 2. \uc798\ubabb\ub41c \uc790\uaca9\uc99d\uba85 \uc785\ub825\n   * 3. form \uc544\ub798\uc5d0 \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ub80c\ub354\ub9c1 \ud655\uc778\n   * 4. \uc5ec\uc804\ud788 /login\uc5d0 \uba38\ubb34\ub984 \ud655\uc778\n   */\n  test('\uc798\ubabb\ub41c \uc790\uaca9\uc99d\uba85\uc73c\ub85c \ub85c\uadf8\uc778\ud558\uba74 \uc5d0\ub7ec \uba54\uc2dc\uc9c0\uac00 \ud45c\uc2dc\ub41c\ub2e4', async () => {\n    // MSW \ud578\ub4e4\ub7ec\ub97c 401\ub85c \uc624\ubc84\ub77c\uc774\ub4dc (\uc774 \ud14c\uc2a4\ud2b8\uc5d0\uc11c\ub9cc \uc801\uc6a9)\n    server.use(\n      http.post('/api/auth/login', () =>\n        HttpResponse.json(\n          { message: '\uc774\uba54\uc77c \ub610\ub294 \ube44\ubc00\ubc88\ud638\uac00 \uc62c\ubc14\ub974\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4' },\n          { status: 401 }\n        )\n      )\n    )\n\n    const user = userEvent.setup()\n    const { Routes, Route, Navigate, useNavigate } = await import('react-router-dom')\n    const { useDispatch } = await import('react-redux')\n    const { setCredentials } = await import('../test-utils')\n    const React = await import('react')\n\n    function LoginPage() {\n      const dispatch = useDispatch()\n      const navigate = useNavigate()\n      const [email, setEmail] = React.useState('')\n      const [password, setPassword] = React.useState('')\n      const [error, setError] = React.useState<string | null>(null)\n\n      async function handleSubmit(e: React.FormEvent) {\n        e.preventDefault()\n        setError(null)\n        const res = await fetch('/api/auth/login', {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify({ email, password }),\n        })\n        if (!res.ok) {\n          const data = await res.json()\n          setError(data.message)\n          return\n        }\n        const data = await res.json()\n        dispatch(setCredentials({ token: data.token, user: data.user }))\n        navigate('/dashboard')\n      }\n\n      return (\n        <form onSubmit={handleSubmit}>\n          <h1>\ub85c\uadf8\uc778</h1>\n          <label htmlFor=\"email\">\uc774\uba54\uc77c</label>\n          <input id=\"email\" type=\"email\" value={email} onChange={(e) => setEmail(e.target.value)} />\n          <label htmlFor=\"password\">\ube44\ubc00\ubc88\ud638</label>\n          <input id=\"password\" type=\"password\" value={password} onChange={(e) => setPassword(e.target.value)} />\n          {error && <p role=\"alert\">{error}</p>}\n          <button type=\"submit\">\ub85c\uadf8\uc778</button>\n        </form>\n      )\n    }\n\n    function TestApp() {\n      return (\n        <Routes>\n          <Route path=\"/login\" element={<LoginPage />} />\n          <Route path=\"/dashboard\" element={<div>\ub300\uc2dc\ubcf4\ub4dc</div>} />\n        </Routes>\n      )\n    }\n\n    renderWithProviders(<TestApp />, { route: '/login' })\n\n    await user.type(screen.getByLabelText('\uc774\uba54\uc77c'), 'wrong@example.com')\n    await user.type(screen.getByLabelText('\ube44\ubc00\ubc88\ud638'), 'wrongpassword')\n    await user.click(screen.getByRole('button', { name: /\ub85c\uadf8\uc778/i }))\n\n    // form \uc544\ub798\uc5d0 \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud45c\uc2dc (\ube44\ub3d9\uae30 \ucffc\ub9ac)\n    const alert = await screen.findByRole('alert')\n    expect(alert).toHaveTextContent('\uc774\uba54\uc77c \ub610\ub294 \ube44\ubc00\ubc88\ud638\uac00 \uc62c\ubc14\ub974\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4')\n\n    // \uc5ec\uc804\ud788 \ub85c\uadf8\uc778 \ud398\uc774\uc9c0\uc5d0 \uba38\ubb34\ub984\n    expect(screen.getByRole('heading', { name: '\ub85c\uadf8\uc778' })).toBeInTheDocument()\n    // \ub300\uc2dc\ubcf4\ub4dc\uac00 \ub80c\ub354\ub9c1\ub418\uc9c0 \uc54a\uc74c\n    expect(screen.queryByText('\ub300\uc2dc\ubcf4\ub4dc')).not.toBeInTheDocument()\n  })\n\n  /**\n   * \uc2dc\ub098\ub9ac\uc624 3: \ube44\uc778\uc99d \uc0ac\uc6a9\uc790\uac00 \ubcf4\ud638\ub41c \uacbd\ub85c(/dashboard)\uc5d0 \uc811\uadfc \u2192 /login \ub9ac\ub2e4\uc774\ub809\ud2b8\n   *\n   * 1. store\uc758 auth.isAuthenticated = false (\uae30\ubcf8\uac12)\n   * 2. /dashboard \uc811\uadfc\n   * 3. ProtectedRoute\uac00 /login\uc73c\ub85c Navigate\n   * 4. \ub85c\uadf8\uc778 \ud398\uc774\uc9c0\uac00 \ub80c\ub354\ub9c1\ub428 \ud655\uc778\n   */\n  test('\ube44\uc778\uc99d \uc0ac\uc6a9\uc790\uac00 /dashboard\uc5d0 \uc811\uadfc\ud558\uba74 /login\uc73c\ub85c \ub9ac\ub2e4\uc774\ub809\ud2b8\ub41c\ub2e4', async () => {\n    const { Routes, Route, Navigate } = await import('react-router-dom')\n    const { useSelector } = await import('react-redux')\n    const React = await import('react')\n\n    function LoginPage() {\n      return <h1>\ub85c\uadf8\uc778</h1>\n    }\n\n    function DashboardPage() {\n      return <h1>\ub300\uc2dc\ubcf4\ub4dc</h1>\n    }\n\n    function ProtectedRoute({ children }: { children: React.ReactNode }) {\n      const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated)\n      return isAuthenticated ? <>{children}</> : <Navigate to=\"/login\" replace />\n    }\n\n    function TestApp() {\n      return (\n        <Routes>\n          <Route path=\"/login\" element={<LoginPage />} />\n          <Route\n            path=\"/dashboard\"\n            element={\n              <ProtectedRoute>\n                <DashboardPage />\n              </ProtectedRoute>\n            }\n          />\n        </Routes>\n      )\n    }\n\n    // \uc778\uc99d\ub418\uc9c0 \uc54a\uc740 \uae30\ubcf8 store \uc0c1\ud0dc\ub85c /dashboard \uc811\uadfc \uc2dc\ub3c4\n    renderWithProviders(<TestApp />, {\n      route: '/dashboard',\n      preloadedState: {\n        auth: { token: null, user: null, isAuthenticated: false },\n      },\n    })\n\n    // /login\uc73c\ub85c \ub9ac\ub2e4\uc774\ub809\ud2b8 \u2192 \ub85c\uadf8\uc778 \ud398\uc774\uc9c0 \ub80c\ub354\ub9c1 \ud655\uc778 (\ube44\ub3d9\uae30 \ucffc\ub9ac)\n    expect(await screen.findByRole('heading', { name: '\ub85c\uadf8\uc778' })).toBeInTheDocument()\n\n    // \ub300\uc2dc\ubcf4\ub4dc \ucee8\ud150\uce20\uac00 \ub80c\ub354\ub9c1\ub418\uc9c0 \uc54a\uc74c\n    expect(screen.queryByText('\ub300\uc2dc\ubcf4\ub4dc')).not.toBeInTheDocument()\n  })\n\n  /**\n   * \uc2dc\ub098\ub9ac\uc624 4 (\ubcf4\ub108\uc2a4): \uc778\uc99d\ub41c \uc0ac\uc6a9\uc790\uac00 /dashboard\uc5d0 \uc811\uadfc\ud558\uba74 \uc815\uc0c1 \uc9c4\uc785\n   *\n   * preloadedState\ub85c \uc778\uc99d \uc0c1\ud0dc\ub97c \uc0ac\uc804 \uc124\uc815\ud55c\ub2e4.\n   */\n  test('\uc778\uc99d\ub41c \uc0ac\uc6a9\uc790\uac00 /dashboard\uc5d0 \uc811\uadfc\ud558\uba74 \ub300\uc2dc\ubcf4\ub4dc\uac00 \ud45c\uc2dc\ub41c\ub2e4', async () => {\n    const { Routes, Route, Navigate } = await import('react-router-dom')\n    const { useSelector } = await import('react-redux')\n    const React = await import('react')\n\n    function LoginPage() {\n      return <h1>\ub85c\uadf8\uc778</h1>\n    }\n\n    function DashboardPage() {\n      return <main><h1>\ub300\uc2dc\ubcf4\ub4dc</h1><p>\ud64d\uae38\ub3d9\ub2d8, \ud658\uc601\ud569\ub2c8\ub2e4</p></main>\n    }\n\n    function ProtectedRoute({ children }: { children: React.ReactNode }) {\n      const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated)\n      return isAuthenticated ? <>{children}</> : <Navigate to=\"/login\" replace />\n    }\n\n    function TestApp() {\n      return (\n        <Routes>\n          <Route path=\"/login\" element={<LoginPage />} />\n          <Route\n            path=\"/dashboard\"\n            element={\n              <ProtectedRoute>\n                <DashboardPage />\n              </ProtectedRoute>\n            }\n          />\n        </Routes>\n      )\n    }\n\n    // \uc778\uc99d\ub41c \uc0c1\ud0dc\ub85c store \ucd08\uae30\ud654\n    renderWithProviders(<TestApp />, {\n      route: '/dashboard',\n      preloadedState: {\n        auth: {\n          token: 'test-jwt-token',\n          user: { id: 1, name: '\ud64d\uae38\ub3d9' },\n          isAuthenticated: true,\n        },\n      },\n    })\n\n    // \ub300\uc2dc\ubcf4\ub4dc \ucee8\ud150\uce20 \ud45c\uc2dc \ud655\uc778\n    expect(await screen.findByRole('heading', { name: '\ub300\uc2dc\ubcf4\ub4dc' })).toBeInTheDocument()\n    expect(screen.getByText('\ud64d\uae38\ub3d9\ub2d8, \ud658\uc601\ud569\ub2c8\ub2e4')).toBeInTheDocument()\n\n    // \ub85c\uadf8\uc778 \ud398\uc774\uc9c0\uac00 \ub80c\ub354\ub9c1\ub418\uc9c0 \uc54a\uc74c\n    expect(screen.queryByRole('heading', { name: '\ub85c\uadf8\uc778' })).not.toBeInTheDocument()\n  })\n})\n"}, {"name": "mocks-handlers.ts", "type": "text", "content": "// src/mocks/handlers.ts\n// MSW v2 \ud578\ub4e4\ub7ec \u2014 \ub85c\uadf8\uc778 \ud50c\ub85c\uc6b0\uc6a9\nimport { http, HttpResponse, delay } from 'msw'\n\nexport const handlers = [\n  /**\n   * POST /api/auth/login\n   *\n   * \uc131\uacf5: \uc62c\ubc14\ub978 \uc790\uaca9\uc99d\uba85 \u2192 200 { token, user }\n   * \uc2e4\ud328: \uc798\ubabb\ub41c \uc790\uaca9\uc99d\uba85 \u2192 401 { message }\n   */\n  http.post('/api/auth/login', async ({ request }) => {\n    const body = await request.json() as { email: string; password: string }\n    const { email, password } = body\n\n    // \uc57d\uac04\uc758 \uc9c0\uc5f0\uc73c\ub85c \ub85c\ub529 \uc0c1\ud0dc \ud14c\uc2a4\ud2b8 \uac00\ub2a5\n    await delay(10)\n\n    if (email === 'user@example.com' && password === 'password123') {\n      return HttpResponse.json(\n        {\n          token: 'test-jwt-token',\n          user: { id: 1, name: '\ud64d\uae38\ub3d9', email: 'user@example.com' },\n        },\n        { status: 200 }\n      )\n    }\n\n    return HttpResponse.json(\n      { message: '\uc774\uba54\uc77c \ub610\ub294 \ube44\ubc00\ubc88\ud638\uac00 \uc62c\ubc14\ub974\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4' },\n      { status: 401 }\n    )\n  }),\n\n  /**\n   * POST /api/auth/logout\n   */\n  http.post('/api/auth/logout', () => {\n    return new HttpResponse(null, { status: 204 })\n  }),\n\n  /**\n   * GET /api/auth/me\n   * \ub300\uc2dc\ubcf4\ub4dc \uc9c4\uc785 \uc2dc \ud604\uc7ac \uc0ac\uc6a9\uc790 \uc815\ubcf4\ub97c \uac00\uc838\uc624\ub294 \uc5d4\ub4dc\ud3ec\uc778\ud2b8 (\uc608\uc2dc)\n   */\n  http.get('/api/auth/me', ({ request }) => {\n    const authHeader = request.headers.get('Authorization')\n\n    if (!authHeader || !authHeader.startsWith('Bearer ')) {\n      return HttpResponse.json({ message: '\uc778\uc99d\uc774 \ud544\uc694\ud569\ub2c8\ub2e4' }, { status: 401 })\n    }\n\n    return HttpResponse.json(\n      { id: 1, name: '\ud64d\uae38\ub3d9', email: 'user@example.com' },\n      { status: 200 }\n    )\n  }),\n]\n"}, {"name": "test-utils.tsx", "type": "text", "content": "// src/test-utils.tsx\n// RTK + React Router v6 \ud1b5\ud569 \ud14c\uc2a4\ud2b8\uc6a9 renderWithProviders\nimport { render, RenderOptions } from '@testing-library/react'\nimport { ReactElement } from 'react'\nimport { Provider } from 'react-redux'\nimport { MemoryRouter } from 'react-router-dom'\nimport { configureStore, PreloadedState } from '@reduxjs/toolkit'\n\n// ----- Store \uc124\uc815 -----\n// \uc2e4\uc81c \ud504\ub85c\uc81d\ud2b8\uc758 store/index.ts \uad6c\uc870\ub97c \ubc18\uc601\ud55c\ub2e4.\n// \ud504\ub85c\uc81d\ud2b8\uc5d0 authSlice \ub4f1\uc774 \uc788\ub2e4\uba74 \uc5ec\uae30\uc5d0 import\ud558\uc5ec \ucd94\uac00\ud55c\ub2e4.\n\n// \uc608\uc2dc auth \uc2ac\ub77c\uc774\uc2a4 (\uc2e4\uc81c \ud504\ub85c\uc81d\ud2b8 \uc2ac\ub77c\uc774\uc2a4\ub85c \uad50\uccb4)\nimport { createSlice, PayloadAction } from '@reduxjs/toolkit'\n\ninterface AuthState {\n  token: string | null\n  user: { id: number; name: string } | null\n  isAuthenticated: boolean\n}\n\nconst initialAuthState: AuthState = {\n  token: null,\n  user: null,\n  isAuthenticated: false,\n}\n\nconst authSlice = createSlice({\n  name: 'auth',\n  initialState: initialAuthState,\n  reducers: {\n    setCredentials(state, action: PayloadAction<{ token: string; user: { id: number; name: string } }>) {\n      state.token = action.payload.token\n      state.user = action.payload.user\n      state.isAuthenticated = true\n    },\n    logout(state) {\n      state.token = null\n      state.user = null\n      state.isAuthenticated = false\n    },\n  },\n})\n\nexport const { setCredentials, logout } = authSlice.actions\n\n// setupStore: preloadedState\ub97c \ubc1b\uc544 \ud14c\uc2a4\ud2b8\ub9c8\ub2e4 \ub3c5\ub9bd\ub41c store \uc778\uc2a4\ud134\uc2a4 \uc0dd\uc131\nexport const setupStore = (preloadedState?: PreloadedState<RootState>) =>\n  configureStore({\n    reducer: {\n      auth: authSlice.reducer,\n      // \ud504\ub85c\uc81d\ud2b8\uc758 \ub2e4\ub978 \uc2ac\ub77c\uc774\uc2a4 \ucd94\uac00\n    },\n    preloadedState,\n  })\n\nexport type AppStore = ReturnType<typeof setupStore>\nexport type RootState = ReturnType<AppStore['getState']>\n\n// ----- renderWithProviders -----\n\ninterface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper'> {\n  /** Redux \ucd08\uae30 \uc0c1\ud0dc (preloadedState) */\n  preloadedState?: Partial<RootState>\n  /** \uc678\ubd80\uc5d0\uc11c \uc0dd\uc131\ud55c store\ub97c \uc9c1\uc811 \uc804\ub2ec\ud560 \ub54c \uc0ac\uc6a9 */\n  store?: AppStore\n  /** MemoryRouter\uc758 \ucd08\uae30 \uacbd\ub85c (\uae30\ubcf8\uac12: '/') */\n  route?: string\n}\n\n/**\n * RTK store + MemoryRouter\ub97c \ud3ec\ud568\ud55c \ud1b5\ud569 \ud14c\uc2a4\ud2b8\uc6a9 render \ud5ec\ud37c.\n *\n * @example\n * // \uae30\ubcf8 \uc0ac\uc6a9\n * renderWithProviders(<App />, { route: '/login' })\n *\n * @example\n * // \uc778\uc99d\ub41c \uc0c1\ud0dc\ub85c \uc2dc\uc791\n * renderWithProviders(<App />, {\n *   route: '/dashboard',\n *   preloadedState: {\n *     auth: { token: 'test-token', user: { id: 1, name: '\ud64d\uae38\ub3d9' }, isAuthenticated: true }\n *   }\n * })\n */\nexport function renderWithProviders(\n  ui: ReactElement,\n  {\n    preloadedState = {},\n    store = setupStore(preloadedState),\n    route = '/',\n    ...renderOptions\n  }: RenderWithProvidersOptions = {}\n) {\n  function Wrapper({ children }: { children: React.ReactNode }) {\n    return (\n      <Provider store={store}>\n        <MemoryRouter initialEntries={[route]}>\n          {children}\n        </MemoryRouter>\n      </Provider>\n    )\n  }\n\n  return { ...render(ui, { wrapper: Wrapper, ...renderOptions }), store }\n}\n\n// @testing-library/react\uc758 \ubaa8\ub4e0 \uc720\ud2f8\ub9ac\ud2f0 \uc7ac-export\nexport * from '@testing-library/react'\nexport { default as userEvent } from '@testing-library/user-event'\n"}], "grading": {"eval_id": 0, "eval_name": "login-flow", "run_type": "with_skill", "expectations": [{"text": "test-utils \ud30c\uc77c\uc5d0 RTK Provider(redux store)\ub97c \ud3ec\ud568\ud55c renderWithProviders\uac00 \uc815\uc758\ub418\uc5b4 \uc788\ub2e4", "passed": true, "evidence": "test-utils.tsx\uc5d0 import Provider from react-redux, setupStore, configureStore \ubaa8\ub450 \ud3ec\ud568. renderWithProviders\uc5d0 <Provider store={store}> \ub798\ud551"}, {"text": "MSW v2 \ubb38\ubc95(http.post, HttpResponse)\uc744 \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "import { http, HttpResponse } from 'msw' \uc0ac\uc6a9, http.post('/api/auth/login', ...) \ub7f0\ud0c0\uc784 \uc624\ubc84\ub77c\uc774\ub4dc \ud3ec\ud568"}, {"text": "\ub85c\uadf8\uc778 \uc131\uacf5/\uc2e4\ud328/\ubcf4\ud638\ub41c \ud398\uc774\uc9c0 \ub9ac\ub2e4\uc774\ub809\ud2b8 3\uac00\uc9c0 \uc2dc\ub098\ub9ac\uc624\uac00 \ubaa8\ub450 \uc788\ub2e4", "passed": true, "evidence": "test 1: \uc131\uacf5\u2192/dashboard, test 2: \uc2e4\ud328\u2192\uc5d0\ub7ec\uba54\uc2dc\uc9c0, test 3: \ube44\uc778\uc99d\u2192/login \ub9ac\ub2e4\uc774\ub809\ud2b8, test 4(\ubcf4\ub108\uc2a4): \uc778\uc99d\u2192\ub300\uc2dc\ubcf4\ub4dc"}, {"text": "\ube44\ub3d9\uae30 \ucffc\ub9ac(findBy* \ub610\ub294 waitFor)\ub97c \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "screen.findByRole('heading', { name: '\ub300\uc2dc\ubcf4\ub4dc' }), screen.findByRole('alert'), screen.findByRole('heading', { name: '\ub85c\uadf8\uc778' }) \ubaa8\ub450 await findBy \ud328\ud134 \uc0ac\uc6a9"}, {"text": "userEvent.setup()\uc744 \uc0ac\uc6a9\ud55c\ub2e4 (fireEvent \ub300\uc2e0)", "passed": true, "evidence": "userEvent.setup() \ub450 \uacf3\uc5d0\uc11c \uc0ac\uc6a9(test 1, test 2). fireEvent \uc5c6\uc74c"}], "pass_rate": 1.0, "notes": "\uc778\ub77c\uc778 stub \ud328\ud134\uc73c\ub85c \uc2e4\uc81c \ucef4\ud3ec\ub10c\ud2b8 \uc5c6\uc774\ub3c4 \ub3d9\uc791 \uac80\uc99d \uac00\ub2a5\ud55c \uc644\uc131\ub3c4 \ub192\uc740 \ucf54\ub4dc. preloadedState \ud65c\uc6a9\uc73c\ub85c \uc778\uc99d \uc0c1\ud0dc \uc8fc\uc785 \ud328\ud134\ub3c4 \uc798 \ubcf4\uc5ec\uc90c"}}, {"id": "eval-0-login-flow-without_skill", "prompt": "\uc6b0\ub9ac React \uc571\uc5d0 \ub85c\uadf8\uc778 \ud1b5\ud569 \ud14c\uc2a4\ud2b8\ub97c \uc791\uc131\ud574\uc918...", "eval_id": 0, "outputs": [{"name": "auth.integration.test.tsx", "type": "text", "content": "// src/__tests__/auth.integration.test.tsx\n// \ub85c\uadf8\uc778 \ud50c\ub85c\uc6b0 \ud1b5\ud569 \ud14c\uc2a4\ud2b8\n//\n// \ucee4\ubc84 \uc2dc\ub098\ub9ac\uc624:\n//   1. \ub85c\uadf8\uc778 \uc131\uacf5 \u2192 /dashboard \uc774\ub3d9\n//   2. \ub85c\uadf8\uc778 \uc2e4\ud328(\uc798\ubabb\ub41c \uc790\uaca9\uc99d\uba85) \u2192 \ud3fc \uc544\ub798 \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud45c\uc2dc\n//   3. \ub85c\uadf8\uc778 \uc2e4\ud328(\uc11c\ubc84 \uc624\ub958 500) \u2192 \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud45c\uc2dc\n//   4. \ube44\uc778\uc99d \uc0ac\uc6a9\uc790\uc758 \ubcf4\ud638\ub41c \uacbd\ub85c \uc811\uadfc \u2192 /login \ub9ac\ub2e4\uc774\ub809\ud2b8\n//   5. \uc778\uc99d\ub41c \uc0ac\uc6a9\uc790\uc758 /login \uc811\uadfc \u2192 /dashboard \ub9ac\ub2e4\uc774\ub809\ud2b8 (\uc774\ubbf8 \ub85c\uadf8\uc778\ub41c \uacbd\uc6b0)\n//\n// \uc2a4\ud0dd: Vite + React 18 + React Router v6 + Redux Toolkit + MSW v2 + Vitest\n\nimport React from 'react'\nimport { screen, waitFor } from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\nimport { http, HttpResponse } from 'msw'\nimport { Routes, Route, Navigate } from 'react-router-dom'\n\nimport {\n  renderWithProviders,\n  server,\n  setCredentials,\n} from '../test-utils'\n\n// ---------------------------------------------------------------------------\n// \ud14c\uc2a4\ud2b8\uc6a9 \ucef4\ud3ec\ub10c\ud2b8 \ub354\ubbf8\n// (\uc2e4\uc81c \ud504\ub85c\uc81d\ud2b8\uc5d0\uc11c\ub294 \uc544\ub798 import\ub97c \uc2e4\uc81c \ucef4\ud3ec\ub10c\ud2b8 \uacbd\ub85c\ub85c \uad50\uccb4\ud558\uc138\uc694)\n//\n// import LoginPage from '../pages/LoginPage'\n// import DashboardPage from '../pages/DashboardPage'\n// import ProtectedRoute from '../components/ProtectedRoute'\n// import { useAppSelector } from '../store/hooks'\n// ---------------------------------------------------------------------------\n\n// \ucd5c\uc18c LoginPage \ub354\ubbf8 \u2014 \uc2e4\uc81c LoginPage \ucef4\ud3ec\ub10c\ud2b8\ub85c \uad50\uccb4 \uc2dc \uc774 \ube14\ub85d \uc0ad\uc81c\nconst LoginPage: React.FC = () => {\n  const [email, setEmail] = React.useState('')\n  const [password, setPassword] = React.useState('')\n  const [error, setError] = React.useState<string | null>(null)\n  const [loading, setLoading] = React.useState(false)\n\n  // \uc2e4\uc81c \uc571\uc5d0\uc11c\ub294 Redux dispatch + RTK Query / thunk \ub85c \uad50\uccb4\n  const handleSubmit = async (e: React.FormEvent) => {\n    e.preventDefault()\n    setError(null)\n    setLoading(true)\n    try {\n      const res = await fetch('/api/auth/login', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ email, password }),\n      })\n      if (!res.ok) {\n        const data = await res.json()\n        setError(data.message ?? '\ub85c\uadf8\uc778\uc5d0 \uc2e4\ud328\ud588\uc2b5\ub2c8\ub2e4.')\n        return\n      }\n      // \uc131\uacf5: \uc2e4\uc81c \uc571\uc5d0\uc11c\ub294 dispatch(setCredentials(...)) \ud6c4 navigate('/dashboard')\n      window.location.pathname = '/dashboard'\n    } catch {\n      setError('\ub124\ud2b8\uc6cc\ud06c \uc624\ub958\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4.')\n    } finally {\n      setLoading(false)\n    }\n  }\n\n  return (\n    <form onSubmit={handleSubmit} aria-label=\"\ub85c\uadf8\uc778 \ud3fc\">\n      <h1>\ub85c\uadf8\uc778</h1>\n      <label htmlFor=\"email\">\uc774\uba54\uc77c</label>\n      <input\n        id=\"email\"\n        type=\"email\"\n        value={email}\n        onChange={(e) => setEmail(e.target.value)}\n        autoComplete=\"email\"\n      />\n      <label htmlFor=\"password\">\ube44\ubc00\ubc88\ud638</label>\n      <input\n        id=\"password\"\n        type=\"password\"\n        value={password}\n        onChange={(e) => setPassword(e.target.value)}\n        autoComplete=\"current-password\"\n      />\n      {error && <p role=\"alert\">{error}</p>}\n      <button type=\"submit\" disabled={loading}>\n        {loading ? '\ub85c\uadf8\uc778 \uc911...' : '\ub85c\uadf8\uc778'}\n      </button>\n    </form>\n  )\n}\n\n// \ucd5c\uc18c DashboardPage \ub354\ubbf8\nconst DashboardPage: React.FC = () => <h1>\ub300\uc2dc\ubcf4\ub4dc</h1>\n\n// \ucd5c\uc18c ProtectedRoute \ub354\ubbf8 \u2014 Redux auth.isAuthenticated\ub97c \ud655\uc778\ud558\ub294 \ud328\ud134\n// \uc2e4\uc81c \ud504\ub85c\uc81d\ud2b8\uc5d0\uc11c\ub294 useAppSelector\ub85c store \uc0c1\ud0dc\ub97c \uc77d\uc2b5\ub2c8\ub2e4.\ninterface ProtectedRouteProps {\n  isAuthenticated: boolean\n  children: React.ReactNode\n}\nconst ProtectedRoute: React.FC<ProtectedRouteProps> = ({\n  isAuthenticated,\n  children,\n}) => {\n  if (!isAuthenticated) {\n    return <Navigate to=\"/login\" replace />\n  }\n  return <>{children}</>\n}\n\n// ---------------------------------------------------------------------------\n// \ub77c\uc6b0\ud305 \ud2b8\ub9ac \ub798\ud37c \u2014 \uc2e4\uc81c App.tsx\uc758 Routes\ub97c \uc7ac\ud604\n// ---------------------------------------------------------------------------\n\n/**\n * isAuthenticated\ub97c prop\uc73c\ub85c \ubc1b\uc544 ProtectedRoute \ub3d9\uc791\uc744 \uc81c\uc5b4.\n * \uc2e4\uc81c \uc571\uc5d0\uc11c\ub294 useAppSelector(state => state.auth.isAuthenticated)\ub85c \uc77d\ub294\ub2e4.\n */\nconst AppRoutes: React.FC<{ isAuthenticated?: boolean }> = ({\n  isAuthenticated = false,\n}) => (\n  <Routes>\n    <Route path=\"/login\" element={<LoginPage />} />\n    <Route\n      path=\"/dashboard\"\n      element={\n        <ProtectedRoute isAuthenticated={isAuthenticated}>\n          <DashboardPage />\n        </ProtectedRoute>\n      }\n    />\n    <Route path=\"*\" element={<Navigate to=\"/login\" replace />} />\n  </Routes>\n)\n\n// ---------------------------------------------------------------------------\n// MSW \uc11c\ubc84 \uc218\uba85\uc8fc\uae30 \uc124\uc815\n// ---------------------------------------------------------------------------\n\nbeforeAll(() => server.listen({ onUnhandledRequest: 'error' }))\nafterEach(() => server.resetHandlers())\nafterAll(() => server.close())\n\n// ---------------------------------------------------------------------------\n// \ud14c\uc2a4\ud2b8 \uc2a4\uc704\ud2b8\n// ---------------------------------------------------------------------------\n\ndescribe('\ub85c\uadf8\uc778 \ud50c\ub85c\uc6b0 \ud1b5\ud569 \ud14c\uc2a4\ud2b8', () => {\n  // -------------------------------------------------------------------------\n  // 1. \ub85c\uadf8\uc778 \uc131\uacf5\n  // -------------------------------------------------------------------------\n  describe('\ub85c\uadf8\uc778 \uc131\uacf5', () => {\n    it('\uc62c\ubc14\ub978 \uc790\uaca9\uc99d\uba85\uc744 \uc785\ub825\ud558\uba74 /dashboard\ub85c \uc774\ub3d9\ud55c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      renderWithProviders(<AppRoutes isAuthenticated={false} />, {\n        route: '/login',\n      })\n\n      // \ub85c\uadf8\uc778 \ud3fc\uc774 \ud45c\uc2dc\ub41c\ub2e4\n      expect(screen.getByRole('heading', { name: '\ub85c\uadf8\uc778' })).toBeInTheDocument()\n\n      // \uc790\uaca9\uc99d\uba85 \uc785\ub825\n      await user.type(screen.getByLabelText('\uc774\uba54\uc77c'), 'user@example.com')\n      await user.type(screen.getByLabelText('\ube44\ubc00\ubc88\ud638'), 'password123')\n\n      // \uc81c\ucd9c\n      await user.click(screen.getByRole('button', { name: '\ub85c\uadf8\uc778' }))\n\n      // \ub300\uc2dc\ubcf4\ub4dc \ub80c\ub354\ub9c1 \ud655\uc778\n      // \uc2e4\uc81c \uc571\uc5d0\uc11c\ub294 navigate()\ub85c \ub77c\uc6b0\ud305\uc774 \ub418\ubbc0\ub85c findBy*\ub85c \ube44\ub3d9\uae30 \ub300\uae30\n      // \uc8fc\uc758: \uc774 \ub354\ubbf8 \uad6c\ud604\uc740 window.location.pathname \uc9c1\uc811 \uc870\uc791\uc744 \uc0ac\uc6a9\ud558\ubbc0\ub85c\n      //       \uc2e4\uc81c \ucef4\ud3ec\ub10c\ud2b8\ub85c \uad50\uccb4\ud558\uba74 \uc544\ub798 \ub2e8\uc5b8\uc774 \uc790\uc5f0\uc2a4\ub7fd\uac8c \ub3d9\uc791\ud569\ub2c8\ub2e4.\n      await waitFor(() => {\n        expect(screen.queryByRole('alert')).not.toBeInTheDocument()\n      })\n    })\n\n    it('\ub85c\uadf8\uc778 \ubc84\ud2bc \ud074\ub9ad \uc2dc \ub85c\ub529 \uc0c1\ud0dc\ub97c \ud45c\uc2dc\ud55c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      // \uc751\ub2f5\uc744 \uc9c0\uc5f0\uc2dc\ucf1c \ub85c\ub529 \uc0c1\ud0dc\ub97c \ud655\uc778\ud55c\ub2e4\n      server.use(\n        http.post('/api/auth/login', async () => {\n          await new Promise((resolve) => setTimeout(resolve, 100))\n          return HttpResponse.json(\n            { token: 'tok', user: { id: 1, email: 'user@example.com', name: '\uc720\uc800' } },\n            { status: 200 }\n          )\n        })\n      )\n\n      renderWithProviders(<AppRoutes />, { route: '/login' })\n\n      await user.type(screen.getByLabelText('\uc774\uba54\uc77c'), 'user@example.com')\n      await user.type(screen.getByLabelText('\ube44\ubc00\ubc88\ud638'), 'password123')\n      await user.click(screen.getByRole('button', { name: '\ub85c\uadf8\uc778' }))\n\n      // \ub85c\ub529 \uc911 \ubc84\ud2bc \ud14d\uc2a4\ud2b8 \ubcc0\uacbd \ud655\uc778\n      expect(screen.getByRole('button', { name: '\ub85c\uadf8\uc778 \uc911...' })).toBeDisabled()\n\n      // \uc644\ub8cc \ud6c4 \ubc84\ud2bc \ubcf5\uc6d0\n      await waitFor(() => {\n        expect(screen.queryByRole('button', { name: '\ub85c\uadf8\uc778 \uc911...' })).not.toBeInTheDocument()\n      })\n    })\n  })\n\n  // -------------------------------------------------------------------------\n  // 2. \ub85c\uadf8\uc778 \uc2e4\ud328 \u2014 \uc798\ubabb\ub41c \uc790\uaca9\uc99d\uba85 (401)\n  // -------------------------------------------------------------------------\n  describe('\ub85c\uadf8\uc778 \uc2e4\ud328 \u2014 \uc798\ubabb\ub41c \uc790\uaca9\uc99d\uba85', () => {\n    it('\uc798\ubabb\ub41c \uc774\uba54\uc77c/\ube44\ubc00\ubc88\ud638 \uc785\ub825 \uc2dc \ud3fc \uc544\ub798\uc5d0 \uc5d0\ub7ec \uba54\uc2dc\uc9c0\uac00 \ud45c\uc2dc\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      renderWithProviders(<AppRoutes />, { route: '/login' })\n\n      await user.type(screen.getByLabelText('\uc774\uba54\uc77c'), 'wrong@example.com')\n      await user.type(screen.getByLabelText('\ube44\ubc00\ubc88\ud638'), 'wrongpassword')\n      await user.click(screen.getByRole('button', { name: '\ub85c\uadf8\uc778' }))\n\n      // role=\"alert\"\ub85c \ub9c8\ud06c\uc5c5\ub41c \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud655\uc778\n      const alert = await screen.findByRole('alert')\n      expect(alert).toBeInTheDocument()\n      expect(alert).toHaveTextContent('\uc774\uba54\uc77c \ub610\ub294 \ube44\ubc00\ubc88\ud638\uac00 \uc62c\ubc14\ub974\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.')\n\n      // \ud398\uc774\uc9c0\uac00 /login\uc5d0 \uba38\ubb38\ub2e4 (MemoryRouter \u2014 window.location\uc774 \uc544\ub2cc \ub77c\uc6b0\ud305 \uc0c1\ud0dc\ub85c \ud655\uc778)\n      expect(screen.getByRole('heading', { name: '\ub85c\uadf8\uc778' })).toBeInTheDocument()\n    })\n\n    it('\uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud45c\uc2dc \ud6c4 \ub2e4\uc2dc \uc62c\ubc14\ub978 \uc790\uaca9\uc99d\uba85\uc744 \uc785\ub825\ud558\uba74 \uc5d0\ub7ec\uac00 \uc0ac\ub77c\uc9c4\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      renderWithProviders(<AppRoutes />, { route: '/login' })\n\n      // 1\ucc28 \uc2dc\ub3c4 \u2014 \uc2e4\ud328\n      await user.type(screen.getByLabelText('\uc774\uba54\uc77c'), 'wrong@example.com')\n      await user.type(screen.getByLabelText('\ube44\ubc00\ubc88\ud638'), 'wrongpassword')\n      await user.click(screen.getByRole('button', { name: '\ub85c\uadf8\uc778' }))\n\n      await screen.findByRole('alert')\n\n      // \uc785\ub825\uac12 \uc218\uc815\n      const emailInput = screen.getByLabelText('\uc774\uba54\uc77c')\n      const passwordInput = screen.getByLabelText('\ube44\ubc00\ubc88\ud638')\n\n      await user.clear(emailInput)\n      await user.clear(passwordInput)\n      await user.type(emailInput, 'user@example.com')\n      await user.type(passwordInput, 'password123')\n      await user.click(screen.getByRole('button', { name: '\ub85c\uadf8\uc778' }))\n\n      // \uc5d0\ub7ec\uac00 \uc0ac\ub77c\uc9c4\ub2e4\n      await waitFor(() => {\n        expect(screen.queryByRole('alert')).not.toBeInTheDocument()\n      })\n    })\n  })\n\n  // -------------------------------------------------------------------------\n  // 3. \ub85c\uadf8\uc778 \uc2e4\ud328 \u2014 \uc11c\ubc84 \uc624\ub958 (500)\n  // -------------------------------------------------------------------------\n  describe('\ub85c\uadf8\uc778 \uc2e4\ud328 \u2014 \uc11c\ubc84 \uc624\ub958', () => {\n    it('\uc11c\ubc84 500 \uc624\ub958 \uc2dc \ub124\ud2b8\uc6cc\ud06c/\uc11c\ubc84 \uc624\ub958 \uba54\uc2dc\uc9c0\ub97c \ud45c\uc2dc\ud55c\ub2e4', async () => {\n      server.use(\n        http.post('/api/auth/login', () =>\n          HttpResponse.json(\n            { message: '\uc11c\ubc84 \ub0b4\ubd80 \uc624\ub958\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4.' },\n            { status: 500 }\n          )\n        )\n      )\n\n      const user = userEvent.setup()\n      renderWithProviders(<AppRoutes />, { route: '/login' })\n\n      await user.type(screen.getByLabelText('\uc774\uba54\uc77c'), 'user@example.com')\n      await user.type(screen.getByLabelText('\ube44\ubc00\ubc88\ud638'), 'password123')\n      await user.click(screen.getByRole('button', { name: '\ub85c\uadf8\uc778' }))\n\n      const alert = await screen.findByRole('alert')\n      expect(alert).toBeInTheDocument()\n      // \uc11c\ubc84\uc5d0\uc11c \ub0b4\ub824\uc628 \uba54\uc2dc\uc9c0 \ub610\ub294 \uc77c\ubc18 \uc5d0\ub7ec \ud14d\uc2a4\ud2b8 \ud655\uc778\n      expect(alert.textContent).toBeTruthy()\n\n      // \uc5ec\uc804\ud788 \ub85c\uadf8\uc778 \ud398\uc774\uc9c0\uc5d0 \uc788\ub2e4\n      expect(screen.getByRole('heading', { name: '\ub85c\uadf8\uc778' })).toBeInTheDocument()\n    })\n\n    it('\ub124\ud2b8\uc6cc\ud06c \uc624\ub958(fetch \uc2e4\ud328) \uc2dc \uc5d0\ub7ec \uba54\uc2dc\uc9c0\ub97c \ud45c\uc2dc\ud55c\ub2e4', async () => {\n      server.use(\n        http.post('/api/auth/login', () => {\n          return HttpResponse.error()\n        })\n      )\n\n      const user = userEvent.setup()\n      renderWithProviders(<AppRoutes />, { route: '/login' })\n\n      await user.type(screen.getByLabelText('\uc774\uba54\uc77c'), 'user@example.com')\n      await user.type(screen.getByLabelText('\ube44\ubc00\ubc88\ud638'), 'password123')\n      await user.click(screen.getByRole('button', { name: '\ub85c\uadf8\uc778' }))\n\n      const alert = await screen.findByRole('alert')\n      expect(alert).toBeInTheDocument()\n    })\n  })\n\n  // -------------------------------------------------------------------------\n  // 4. ProtectedRoute \u2014 \ube44\uc778\uc99d \uc0ac\uc6a9\uc790 \uc811\uadfc \ucc28\ub2e8\n  // -------------------------------------------------------------------------\n  describe('ProtectedRoute \u2014 \ube44\uc778\uc99d \uc0ac\uc6a9\uc790 \uc811\uadfc \ucc28\ub2e8', () => {\n    it('\ube44\uc778\uc99d \uc0c1\ud0dc\uc5d0\uc11c /dashboard\uc5d0 \uc9c1\uc811 \uc811\uadfc\ud558\uba74 /login\uc73c\ub85c \ub9ac\ub2e4\uc774\ub809\ud2b8\ub41c\ub2e4', () => {\n      // isAuthenticated: false (\uae30\ubcf8\uac12)\n      renderWithProviders(<AppRoutes isAuthenticated={false} />, {\n        route: '/dashboard',\n      })\n\n      // \ub300\uc2dc\ubcf4\ub4dc\uac00 \ub80c\ub354\ub418\uc9c0 \uc54a\uace0 \ub85c\uadf8\uc778 \ud398\uc774\uc9c0\uac00 \ud45c\uc2dc\ub41c\ub2e4\n      expect(screen.getByRole('heading', { name: '\ub85c\uadf8\uc778' })).toBeInTheDocument()\n      expect(screen.queryByRole('heading', { name: '\ub300\uc2dc\ubcf4\ub4dc' })).not.toBeInTheDocument()\n    })\n\n    it('\ube44\uc778\uc99d \uc0c1\ud0dc\uc5d0\uc11c \uc784\uc758 \uacbd\ub85c(/settings \ub4f1)\uc5d0 \uc811\uadfc\ud574\ub3c4 /login\uc73c\ub85c \ub9ac\ub2e4\uc774\ub809\ud2b8\ub41c\ub2e4', () => {\n      renderWithProviders(<AppRoutes isAuthenticated={false} />, {\n        route: '/settings',\n      })\n\n      // catch-all Navigate\uac00 /login\uc73c\ub85c \ubcf4\ub0b8\ub2e4\n      expect(screen.getByRole('heading', { name: '\ub85c\uadf8\uc778' })).toBeInTheDocument()\n    })\n  })\n\n  // -------------------------------------------------------------------------\n  // 5. ProtectedRoute \u2014 \uc778\uc99d\ub41c \uc0ac\uc6a9\uc790 \uc811\uadfc \ud5c8\uc6a9\n  // -------------------------------------------------------------------------\n  describe('ProtectedRoute \u2014 \uc778\uc99d\ub41c \uc0ac\uc6a9\uc790 \uc811\uadfc \ud5c8\uc6a9', () => {\n    it('\uc778\uc99d \uc0c1\ud0dc\uc5d0\uc11c /dashboard\uc5d0 \uc811\uadfc\ud558\uba74 \ub300\uc2dc\ubcf4\ub4dc\uac00 \ub80c\ub354\ub41c\ub2e4', () => {\n      renderWithProviders(<AppRoutes isAuthenticated={true} />, {\n        route: '/dashboard',\n        // Redux \uc2a4\ud1a0\uc5b4\uc5d0 \uc778\uc99d \uc815\ubcf4\ub97c \uc8fc\uc785\ud558\ub294 \uacbd\uc6b0:\n        preloadedState: {\n          auth: {\n            token: 'mock-jwt-token-abc123',\n            user: { id: 1, email: 'user@example.com', name: '\ud14c\uc2a4\ud2b8 \uc720\uc800' },\n            isAuthenticated: true,\n          },\n        },\n      })\n\n      expect(screen.getByRole('heading', { name: '\ub300\uc2dc\ubcf4\ub4dc' })).toBeInTheDocument()\n      expect(screen.queryByRole('heading', { name: '\ub85c\uadf8\uc778' })).not.toBeInTheDocument()\n    })\n  })\n})\n\n// ---------------------------------------------------------------------------\n// \ucd94\uac00 \ud14c\uc2a4\ud2b8: LoginPage \ub2e8\ub3c5 \ub80c\ub354 (\ud3fc \uc811\uadfc\uc131 \uac80\uc99d)\n// ---------------------------------------------------------------------------\n\ndescribe('LoginPage \ud3fc \uc811\uadfc\uc131', () => {\n  it('\uc774\uba54\uc77c, \ube44\ubc00\ubc88\ud638 \uc785\ub825 \ud544\ub4dc\uc640 \uc81c\ucd9c \ubc84\ud2bc\uc774 \uc874\uc7ac\ud55c\ub2e4', () => {\n    renderWithProviders(<LoginPage />, { route: '/login' })\n\n    expect(screen.getByLabelText('\uc774\uba54\uc77c')).toBeInTheDocument()\n    expect(screen.getByLabelText('\ube44\ubc00\ubc88\ud638')).toBeInTheDocument()\n    expect(screen.getByRole('button', { name: '\ub85c\uadf8\uc778' })).toBeInTheDocument()\n  })\n\n  it('\ucd08\uae30 \ub80c\ub354 \uc2dc \uc5d0\ub7ec \uba54\uc2dc\uc9c0\uac00 \uc5c6\ub2e4', () => {\n    renderWithProviders(<LoginPage />, { route: '/login' })\n\n    expect(screen.queryByRole('alert')).not.toBeInTheDocument()\n  })\n\n  it('\uc785\ub825 \ud544\ub4dc\uc5d0 \ud0c0\uc774\ud551\ud55c \uac12\uc774 \uc815\uc0c1\uc801\uc73c\ub85c \ubc18\uc601\ub41c\ub2e4', async () => {\n    const user = userEvent.setup()\n    renderWithProviders(<LoginPage />, { route: '/login' })\n\n    await user.type(screen.getByLabelText('\uc774\uba54\uc77c'), 'test@example.com')\n    await user.type(screen.getByLabelText('\ube44\ubc00\ubc88\ud638'), 'mypassword')\n\n    expect(screen.getByLabelText('\uc774\uba54\uc77c')).toHaveValue('test@example.com')\n    expect(screen.getByLabelText('\ube44\ubc00\ubc88\ud638')).toHaveValue('mypassword')\n  })\n})\n"}, {"name": "mocks-handlers.ts", "type": "text", "content": "// src/mocks/handlers.ts\n// MSW v2 \ud578\ub4e4\ub7ec \u2014 \ub85c\uadf8\uc778/\uc778\uc99d \uad00\ub828 API \uae30\ubcf8 \uc751\ub2f5 \uc815\uc758\n\nimport { http, HttpResponse } from 'msw'\n\n// \uc131\uacf5 \uc2dc \ubc18\ud658\ud560 \ub354\ubbf8 \uc720\uc800 \ubc0f \ud1a0\ud070\nconst MOCK_TOKEN = 'mock-jwt-token-abc123'\nconst MOCK_USER = {\n  id: 1,\n  email: 'user@example.com',\n  name: '\ud14c\uc2a4\ud2b8 \uc720\uc800',\n  role: 'user',\n}\n\nexport const handlers = [\n  // POST /api/auth/login \u2014 \ub85c\uadf8\uc778\n  http.post('/api/auth/login', async ({ request }) => {\n    const body = (await request.json()) as { email: string; password: string }\n\n    if (body.email === 'user@example.com' && body.password === 'password123') {\n      return HttpResponse.json(\n        {\n          token: MOCK_TOKEN,\n          user: MOCK_USER,\n        },\n        { status: 200 }\n      )\n    }\n\n    return HttpResponse.json(\n      { message: '\uc774\uba54\uc77c \ub610\ub294 \ube44\ubc00\ubc88\ud638\uac00 \uc62c\ubc14\ub974\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.' },\n      { status: 401 }\n    )\n  }),\n\n  // POST /api/auth/logout \u2014 \ub85c\uadf8\uc544\uc6c3\n  http.post('/api/auth/logout', () => {\n    return HttpResponse.json({ message: '\ub85c\uadf8\uc544\uc6c3 \ub418\uc5c8\uc2b5\ub2c8\ub2e4.' }, { status: 200 })\n  }),\n\n  // GET /api/auth/me \u2014 \ud604\uc7ac \uc778\uc99d \uc0ac\uc6a9\uc790 \uc815\ubcf4 \uc870\ud68c\n  http.get('/api/auth/me', ({ request }) => {\n    const authHeader = request.headers.get('Authorization')\n\n    if (authHeader === `Bearer ${MOCK_TOKEN}`) {\n      return HttpResponse.json(MOCK_USER, { status: 200 })\n    }\n\n    return HttpResponse.json({ message: '\uc778\uc99d\uc774 \ud544\uc694\ud569\ub2c8\ub2e4.' }, { status: 401 })\n  }),\n\n  // GET /api/dashboard \u2014 \ub300\uc2dc\ubcf4\ub4dc \ub370\uc774\ud130 (\ub85c\uadf8\uc778 \ud6c4 \uc774\ub3d9\ud558\ub294 \ud398\uc774\uc9c0)\n  http.get('/api/dashboard', ({ request }) => {\n    const authHeader = request.headers.get('Authorization')\n\n    if (authHeader === `Bearer ${MOCK_TOKEN}`) {\n      return HttpResponse.json(\n        {\n          summary: '\ub300\uc2dc\ubcf4\ub4dc \ub370\uc774\ud130 \ub85c\ub4dc \uc644\ub8cc',\n          items: [{ id: 1, title: '\ud56d\ubaa9 1' }],\n        },\n        { status: 200 }\n      )\n    }\n\n    return HttpResponse.json({ message: '\uc778\uc99d\uc774 \ud544\uc694\ud569\ub2c8\ub2e4.' }, { status: 401 })\n  }),\n]\n"}, {"name": "test-utils.tsx", "type": "text", "content": "// src/test-utils.tsx\n// Vite + React 18 + React Router v6 + Redux Toolkit + MSW v2 \ud1b5\ud569 \ud14c\uc2a4\ud2b8 \uc720\ud2f8\ub9ac\ud2f0\n//\n// \uc0ac\uc6a9\ubc95:\n//   import { renderWithProviders, screen } from '../test-utils'\n//   renderWithProviders(<LoginPage />, { route: '/login' })\n\nimport React, { ReactElement } from 'react'\nimport { render, RenderOptions, RenderResult } from '@testing-library/react'\nimport { MemoryRouter, Routes, Route } from 'react-router-dom'\nimport { Provider } from 'react-redux'\nimport { configureStore, EnhancedStore } from '@reduxjs/toolkit'\nimport { setupServer } from 'msw/node'\nimport { handlers } from './mocks/handlers'\n\n// ---------------------------------------------------------------------------\n// MSW \uc11c\ubc84 \uc124\uc815 (Node \ud658\uacbd \u2014 Vitest/Jest \uacf5\ud1b5)\n// ---------------------------------------------------------------------------\n\nexport const server = setupServer(...handlers)\n\n// \uc804\uccb4 \ud14c\uc2a4\ud2b8 \uc2a4\uc704\ud2b8\uc5d0\uc11c \ud55c \ubc88\ub9cc \ud638\ucd9c\ud55c\ub2e4. (\uc608: src/setupTests.ts \ub610\ub294 vitest.setup.ts)\n//\n//   import { server } from './test-utils'\n//   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))\n//   afterEach(() => server.resetHandlers())\n//   afterAll(() => server.close())\n\n// ---------------------------------------------------------------------------\n// Redux Store \ud0c0\uc785 \u2014 \uc2e4\uc81c \ud504\ub85c\uc81d\ud2b8\uc758 rootReducer\ub85c \uad50\uccb4\ud558\uc138\uc694\n// ---------------------------------------------------------------------------\n\n// \uc608\uc2dc: import { rootReducer } from './store/rootReducer'\n// \uc5ec\uae30\uc11c\ub294 \ucd5c\uc18c\ud55c\uc758 auth \uc2ac\ub77c\uc774\uc2a4\ub9cc inline\uc73c\ub85c \uc815\uc758\ud569\ub2c8\ub2e4.\nimport { createSlice, PayloadAction } from '@reduxjs/toolkit'\n\ninterface AuthState {\n  token: string | null\n  user: { id: number; email: string; name: string } | null\n  isAuthenticated: boolean\n}\n\nconst initialAuthState: AuthState = {\n  token: null,\n  user: null,\n  isAuthenticated: false,\n}\n\nconst authSlice = createSlice({\n  name: 'auth',\n  initialState: initialAuthState,\n  reducers: {\n    setCredentials(\n      state,\n      action: PayloadAction<{ token: string; user: AuthState['user'] }>\n    ) {\n      state.token = action.payload.token\n      state.user = action.payload.user\n      state.isAuthenticated = true\n    },\n    logout(state) {\n      state.token = null\n      state.user = null\n      state.isAuthenticated = false\n    },\n  },\n})\n\nexport const { setCredentials, logout } = authSlice.actions\n\n// rootReducer\uc5d0 \uc2ac\ub77c\uc774\uc2a4\ub97c \ub4f1\ub85d\ud55c\ub2e4. \uc2e4\uc81c \ud504\ub85c\uc81d\ud2b8\uc5d0\uc11c\ub294 \uae30\uc874 rootReducer\ub97c import\ud574\uc11c \uc0ac\uc6a9\ud558\uc138\uc694.\nconst rootReducer = {\n  auth: authSlice.reducer,\n  // \ud544\uc694 \uc2dc \ub2e4\ub978 \uc2ac\ub77c\uc774\uc2a4 \ucd94\uac00: cart: cartSlice.reducer, ...\n}\n\n// ---------------------------------------------------------------------------\n// Store \ud329\ud1a0\ub9ac \u2014 \ud14c\uc2a4\ud2b8\ub9c8\ub2e4 \ub3c5\ub9bd\ub41c store \uc778\uc2a4\ud134\uc2a4 \uc0dd\uc131\n// ---------------------------------------------------------------------------\n\ntype RootState = {\n  auth: AuthState\n  // \uc2ac\ub77c\uc774\uc2a4 \ucd94\uac00 \uc2dc \ud0c0\uc785\ub3c4 \ud568\uaed8 \ud655\uc7a5\ud558\uc138\uc694\n}\n\nexport function setupStore(preloadedState?: Partial<RootState>): EnhancedStore {\n  return configureStore({\n    reducer: rootReducer,\n    preloadedState,\n  })\n}\n\n// ---------------------------------------------------------------------------\n// \ucee4\uc2a4\ud140 renderWithProviders\n// ---------------------------------------------------------------------------\n\ninterface ExtendedRenderOptions extends Omit<RenderOptions, 'wrapper'> {\n  /** \ud14c\uc2a4\ud2b8 \uc2dc\uc791 URL. \uae30\ubcf8\uac12: '/' */\n  route?: string\n  /** \ucd08\uae30 Redux \uc0c1\ud0dc. \uc778\uc99d\ub41c \uc0ac\uc6a9\uc790\ub85c \uc2dc\uc791\ud560 \ub54c \ud65c\uc6a9. */\n  preloadedState?: Partial<RootState>\n  /** \uc678\ubd80\uc5d0\uc11c store \uc778\uc2a4\ud134\uc2a4\ub97c \uc9c1\uc811 \uc8fc\uc785\ud560 \ub54c \uc0ac\uc6a9. */\n  store?: EnhancedStore\n}\n\nexport interface RenderWithProvidersResult extends RenderResult {\n  store: EnhancedStore\n}\n\n/**\n * \uc2e4\uc81c \uc571\uacfc \ub3d9\uc77c\ud55c Provider \ud658\uacbd\uc5d0\uc11c \ucef4\ud3ec\ub10c\ud2b8\ub97c \ub80c\ub354\ud55c\ub2e4.\n *\n * - Redux Provider (RTK store)\n * - MemoryRouter (React Router v6) \u2014 \ucd08\uae30 route \uc9c0\uc815 \uac00\ub2a5\n *\n * @example\n * // \uae30\ubcf8 \uc0ac\uc6a9\n * const { store } = renderWithProviders(<LoginPage />, { route: '/login' })\n *\n * @example\n * // \uc778\uc99d\ub41c \uc0ac\uc6a9\uc790 \uc0c1\ud0dc\uc5d0\uc11c \uc2dc\uc791\n * renderWithProviders(<DashboardPage />, {\n *   route: '/dashboard',\n *   preloadedState: {\n *     auth: { token: 'tok', user: { id: 1, email: 'a@b.com', name: '\ud64d\uae38\ub3d9' }, isAuthenticated: true }\n *   }\n * })\n */\nexport function renderWithProviders(\n  ui: ReactElement,\n  {\n    route = '/',\n    preloadedState,\n    store = setupStore(preloadedState),\n    ...renderOptions\n  }: ExtendedRenderOptions = {}\n): RenderWithProvidersResult {\n  function Wrapper({ children }: { children: React.ReactNode }) {\n    return (\n      <Provider store={store}>\n        <MemoryRouter initialEntries={[route]}>\n          {children}\n        </MemoryRouter>\n      </Provider>\n    )\n  }\n\n  const result = render(ui, { wrapper: Wrapper, ...renderOptions })\n  return { ...result, store }\n}\n\n/**\n * App \ucef4\ud3ec\ub10c\ud2b8 \uc804\uccb4\ub97c \ud2b9\uc815 \uacbd\ub85c\ub85c \ub80c\ub354\ud560 \ub54c \uc0ac\uc6a9\ud558\ub294 \ud5ec\ud37c.\n * ProtectedRoute + \uc804\uccb4 \ub77c\uc6b0\ud305 \ud2b8\ub9ac\uac00 \ud544\uc694\ud55c \ud14c\uc2a4\ud2b8\uc5d0 \uc801\ud569\ud558\ub2e4.\n *\n * @example\n * renderApp('/dashboard')           // \ube44\uc778\uc99d \u2192 /login \ub9ac\ub2e4\uc774\ub809\ud2b8 \ud655\uc778\n * renderApp('/login', preloadedState) // \uc778\uc99d \uc0c1\ud0dc\uc5d0\uc11c /login \uc811\uadfc \uc2dc \ub3d9\uc791 \ud655\uc778\n */\nexport function renderApp(\n  route: string,\n  preloadedState?: Partial<RootState>\n): RenderWithProvidersResult {\n  // \uc2e4\uc81c App \ucef4\ud3ec\ub10c\ud2b8\ub97c import\ud574\uc11c \uc0ac\uc6a9\ud558\uc138\uc694:\n  // import App from './App'\n  // return renderWithProviders(<App />, { route, preloadedState })\n  //\n  // \uc544\ub798\ub294 App\uc774 \uc5c6\ub294 \ud658\uacbd\uc5d0\uc11c \ub3d9\uc791\ud558\ub294 \ucd5c\uc18c placeholder\uc785\ub2c8\ub2e4.\n  const Placeholder = () => <div>App placeholder \u2014 App \ucef4\ud3ec\ub10c\ud2b8\ub85c \uad50\uccb4\ud558\uc138\uc694</div>\n  return renderWithProviders(<Placeholder />, { route, preloadedState })\n}\n\n// ---------------------------------------------------------------------------\n// @testing-library/react \uc804\uccb4 re-export \u2014 \ud14c\uc2a4\ud2b8 \ud30c\uc77c\uc5d0\uc11c \uc774 \ubaa8\ub4c8\ub9cc import\ud558\uba74 \ub428\n// ---------------------------------------------------------------------------\nexport * from '@testing-library/react'\n"}], "grading": {"eval_id": 0, "eval_name": "login-flow", "run_type": "without_skill", "expectations": [{"text": "test-utils \ud30c\uc77c\uc5d0 RTK Provider(redux store)\ub97c \ud3ec\ud568\ud55c renderWithProviders\uac00 \uc815\uc758\ub418\uc5b4 \uc788\ub2e4", "passed": true, "evidence": "test-utils.tsx\ub97c \uc790\uccb4 \uc0dd\uc131\ud558\uc5ec Provider + MemoryRouter \ud3ec\ud568. \uad6c\uc870\ub294 \uc720\uc0ac\ud558\uc9c0\ub9cc \uc2a4\ud0ac \uc5c6\uc774\ub3c4 \uc0dd\uc131\ud568"}, {"text": "MSW v2 \ubb38\ubc95(http.post, HttpResponse)\uc744 \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "import { http, HttpResponse } from 'msw' \uc0ac\uc6a9. MSW v2 API \uc815\ud655\ud788 \uc801\uc6a9"}, {"text": "\ub85c\uadf8\uc778 \uc131\uacf5/\uc2e4\ud328/\ubcf4\ud638\ub41c \ud398\uc774\uc9c0 \ub9ac\ub2e4\uc774\ub809\ud2b8 3\uac00\uc9c0 \uc2dc\ub098\ub9ac\uc624\uac00 \ubaa8\ub450 \uc788\ub2e4", "passed": true, "evidence": "5\uac1c \uc2dc\ub098\ub9ac\uc624 \ud3ec\ud568: \uc131\uacf5, \uc2e4\ud328(401), \uc2e4\ud328(500/\ub124\ud2b8\uc6cc\ud06c), \ube44\uc778\uc99d \ucc28\ub2e8, \uc778\uc99d \ud5c8\uc6a9 \u2014 \ub354 \ub9ce\uc740 \ucf00\uc774\uc2a4 \uc0dd\uc131"}, {"text": "\ube44\ub3d9\uae30 \ucffc\ub9ac(findBy* \ub610\ub294 waitFor)\ub97c \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "waitFor \ubc0f findBy* \ud328\ud134 \ubaa8\ub450 \uc0ac\uc6a9"}, {"text": "userEvent.setup()\uc744 \uc0ac\uc6a9\ud55c\ub2e4 (fireEvent \ub300\uc2e0)", "passed": true, "evidence": "userEvent \uc0ac\uc6a9. \uadf8\ub7ec\ub098 setup() \ud328\ud134\uc774 \uc77c\ubd80 \ud14c\uc2a4\ud2b8\uc5d0\uc11c \ub204\ub77d\ub420 \uc218 \uc788\uc74c"}], "pass_rate": 1.0, "notes": "\uc2a4\ud0ac \uc5c6\uc774\ub3c4 \uc88b\uc740 \ucf54\ub4dc \uc0dd\uc131. \ub2e4\ub9cc \uc2a4\ud0ac \uac00\uc774\ub4dc \uc5c6\uc774 \ub354 \ub9ce\uc740 \ucf00\uc774\uc2a4(500 \uc5d0\ub7ec, \ub124\ud2b8\uc6cc\ud06c \uc624\ub958 \ub4f1)\ub97c \ucd94\uac00\ud558\uc5ec \uc624\ud788\ub824 \ub354 \ub9ce\uc740 \ucf54\ub4dc\uac00 \uc0dd\uc131\ub428. \uc2a4\ud0ac\uc740 \uc9d1\uc911\uc801\uc774\uace0 \uad6c\uc870\ud654\ub41c \ucd9c\ub825\uc744 \ub3d5\ub294\ub2e4"}}, {"id": "eval-1-comment-flow-with_skill", "prompt": "\ub313\uae00 \uae30\ub2a5 \ud1b5\ud569 \ud14c\uc2a4\ud2b8 \uc9dc\uc918. React Query v5 + MSW v2 \ud658\uacbd\uc774\uc57c. PostDetail \ud398\uc774\uc9c0\uc5d0 \ub313\uae00 \ubaa9\ub85d(CommentList)\uc774\ub791 \ub313\uae00 \uc791\uc131 \ud3fc(CommentForm)\uc774 \uac19\uc774 \uc788\uc5b4. \ud3fc\uc5d0\uc11c \uc81c\ucd9c\ud558\uba74 POST /api/posts/:id/comments \ud638\ucd9c\ud558\uace0, \uc131\uacf5\ud558\uba74 \ubaa9\ub85d\uc5d0 \uc0c8 \ub313\uae00\uc774 \ucd94\uac00\ub418\uace0 \uc785\ub825\ucc3d\uc774 \ucd08\uae30\ud654\ub3fc. API \uc2e4\ud328 \uc2dc\uc5d0\ub294 \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud45c\uc2dc\ud558\uace0 \uc785\ub825\uac12 \uc720\uc9c0\ud574\uc57c \ud574. renderWithProviders\ub294 \uc774\ubbf8 QueryClientProvider + MemoryRouter\ub85c \uc124\uc815\ub418\uc5b4 \uc788\uc5b4(src/test-utils.tsx\uc5d0 \uc788\uc74c).", "eval_id": 1, "outputs": [{"name": "post-detail.integration.test.tsx", "type": "text", "content": "/**\n * PostDetail \ud398\uc774\uc9c0 \ud1b5\ud569 \ud14c\uc2a4\ud2b8\n *\n * \ucee4\ubc84 \uc2dc\ub098\ub9ac\uc624:\n *  1. \ub313\uae00 \uc791\uc131 \uc131\uacf5 \u2192 \ubaa9\ub85d \uc5c5\ub370\uc774\ud2b8 + \ud3fc \ucd08\uae30\ud654\n *  2. \uc720\ud6a8\uc131 \uac80\uc0ac \uc2e4\ud328 \u2192 \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud45c\uc2dc (API \ud638\ucd9c \uc5c6\uc74c)\n *  3. API \uc624\ub958 \u2192 \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud45c\uc2dc + \uc785\ub825\uac12 \uc720\uc9c0\n *\n * \ud658\uacbd: React Query v5 + MSW v2 + renderWithProviders(QueryClientProvider + MemoryRouter)\n */\n\nimport { screen, waitForElementToBeRemoved } from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\nimport { http, HttpResponse } from 'msw'\nimport { renderWithProviders } from '@/test-utils'\nimport { server } from '@/mocks/server'\nimport PostDetail from '@/pages/PostDetail'\n\n// ---------------------------------------------------------------------------\n// \uacf5\uc6a9 \ud53d\uc2a4\ucc98\n// ---------------------------------------------------------------------------\n\nconst POST_ID = '42'\n\nconst INITIAL_COMMENTS = [\n  { id: 1, author: '\ud64d\uae38\ub3d9', body: '\uccab \ubc88\uc9f8 \ub313\uae00\uc785\ub2c8\ub2e4.' },\n  { id: 2, author: '\uae40\ucca0\uc218', body: '\ub450 \ubc88\uc9f8 \ub313\uae00\uc785\ub2c8\ub2e4.' },\n]\n\nconst NEW_COMMENT = { id: 3, author: '\ud14c\uc2a4\ud2b8 \uc720\uc800', body: '\uc0c8\ub85c \uc791\uc131\ud55c \ub313\uae00\uc785\ub2c8\ub2e4.' }\n\n// ---------------------------------------------------------------------------\n// MSW \uae30\ubcf8 \ud578\ub4e4\ub7ec \u2014 beforeEach \ub9c8\ub2e4 server.resetHandlers()\ub85c \ubcf5\uc6d0\ub428\n// ---------------------------------------------------------------------------\n\nbeforeAll(() => {\n  // \uae30\ubcf8 GET /api/posts/:id/comments \ud578\ub4e4\ub7ec\ub294 server.ts(\ub610\ub294 handlers.ts)\uc5d0 \ub4f1\ub85d\ub3fc \uc788\ub2e4\uace0 \uac00\uc815.\n  // \uc774 \ud30c\uc77c\uc5d0\uc11c\ub294 \ub7f0\ud0c0\uc784 \uc624\ubc84\ub77c\uc774\ub4dc\ub9cc \uc0ac\uc6a9\ud55c\ub2e4.\n})\n\nafterEach(() => {\n  // \ub7f0\ud0c0\uc784 \uc624\ubc84\ub77c\uc774\ub4dc\uac00 \ub2e4\uc74c \ud14c\uc2a4\ud2b8\ub85c \ub204\ucd9c\ub418\uc9c0 \uc54a\ub3c4\ub85d \ucd08\uae30\ud654\n  server.resetHandlers()\n})\n\n// ---------------------------------------------------------------------------\n// describe: \ub313\uae00 \uc791\uc131 \ud50c\ub85c\uc6b0\n// ---------------------------------------------------------------------------\n\ndescribe('PostDetail \u2014 \ub313\uae00 \uc791\uc131 \ud50c\ub85c\uc6b0', () => {\n  // \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  // \uc2dc\ub098\ub9ac\uc624 1: \ub313\uae00 \uc791\uc131 \uc131\uacf5\n  // \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  test('\ub313\uae00 \uc81c\ucd9c \uc131\uacf5 \uc2dc \ubaa9\ub85d\uc5d0 \uc0c8 \ub313\uae00\uc774 \ucd94\uac00\ub418\uace0 \uc785\ub825\ucc3d\uc774 \ucd08\uae30\ud654\ub41c\ub2e4', async () => {\n    const user = userEvent.setup()\n\n    // MSW: \ucd08\uae30 \ubaa9\ub85d \uc751\ub2f5\n    server.use(\n      http.get(`/api/posts/${POST_ID}/comments`, () =>\n        HttpResponse.json(INITIAL_COMMENTS)\n      ),\n      // POST \uc131\uacf5 \u2192 \uc11c\ubc84\uac00 \uc0dd\uc131\ub41c \ub313\uae00\uc744 \ubc18\ud658\n      http.post(`/api/posts/:id/comments`, () =>\n        HttpResponse.json(NEW_COMMENT, { status: 201 })\n      )\n    )\n\n    renderWithProviders(<PostDetail postId={POST_ID} />)\n\n    // \ucd08\uae30 \ub313\uae00 \ubaa9\ub85d \ub85c\ub4dc \ub300\uae30 (findAllByRole = waitFor + getAllByRole)\n    const initialComments = await screen.findAllByRole('listitem', { name: /comment/i })\n    expect(initialComments).toHaveLength(INITIAL_COMMENTS.length)\n\n    // \ub313\uae00 \uc785\ub825 \ubc0f \uc81c\ucd9c\n    const textarea = screen.getByLabelText(/\ub313\uae00 \uc785\ub825/i)\n    await user.type(textarea, NEW_COMMENT.body)\n    await user.click(screen.getByRole('button', { name: /\ub4f1\ub85d/i }))\n\n    // \ub85c\ub529(\uc81c\ucd9c \uc911) \uc2a4\ud53c\ub108\uac00 \uc0ac\ub77c\uc9c8 \ub54c\uae4c\uc9c0 \ub300\uae30\n    // \ucef4\ud3ec\ub10c\ud2b8\uac00 \uc81c\ucd9c \uc911 \ubc84\ud2bc\uc744 \ube44\ud65c\uc131\ud654\ud558\uac70\ub098 \uc2a4\ud53c\ub108\ub97c \ub80c\ub354\ub9c1\ud558\uba74 \uc544\ub798 \ub77c\uc778\uc774 Flaky \ubc29\uc9c0 \uc5ed\ud560\uc744 \ud55c\ub2e4.\n    // \uad6c\ud604\uc5d0 \ub530\ub77c waitForElementToBeRemoved \ub300\uc0c1\uc744 \uc870\uc815\ud55c\ub2e4.\n    // \uc5ec\uae30\uc11c\ub294 \ubba4\ud14c\uc774\uc158 \uc131\uacf5 \ud6c4 React Query\uac00 \ucffc\ub9ac\ub97c \ubb34\ud6a8\ud654\ud558\uc5ec \ubaa9\ub85d\uc744 \uc7ac\ud398\uce6d\ud558\ubbc0\ub85c\n    // \uc0c8 \ub313\uae00 \ud14d\uc2a4\ud2b8\uac00 \ub098\ud0c0\ub0a0 \ub54c\uae4c\uc9c0 \uae30\ub2e4\ub9b0\ub2e4.\n    expect(await screen.findByText(NEW_COMMENT.body)).toBeInTheDocument()\n\n    // \ubaa9\ub85d \uc544\uc774\ud15c\uc774 1\uac1c \uc99d\uac00\ud588\ub294\uc9c0 \ud655\uc778\n    const updatedComments = await screen.findAllByRole('listitem', { name: /comment/i })\n    expect(updatedComments).toHaveLength(INITIAL_COMMENTS.length + 1)\n\n    // \uc785\ub825\ucc3d \ucd08\uae30\ud654 \ud655\uc778\n    expect(textarea).toHaveValue('')\n  })\n\n  // \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  // \uc2dc\ub098\ub9ac\uc624 2: \uc720\ud6a8\uc131 \uac80\uc0ac \uc2e4\ud328 (\ube48 \uac12 \uc81c\ucd9c)\n  // \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  test('\uc785\ub825\uac12 \uc5c6\uc774 \uc81c\ucd9c\ud558\uba74 \uc720\ud6a8\uc131 \uc624\ub958 \uba54\uc2dc\uc9c0\ub97c \ud45c\uc2dc\ud558\uace0 API\ub97c \ud638\ucd9c\ud558\uc9c0 \uc54a\ub294\ub2e4', async () => {\n    const user = userEvent.setup()\n\n    server.use(\n      http.get(`/api/posts/${POST_ID}/comments`, () =>\n        HttpResponse.json(INITIAL_COMMENTS)\n      )\n    )\n\n    renderWithProviders(<PostDetail postId={POST_ID} />)\n\n    // \ucd08\uae30 \ubaa9\ub85d \ub85c\ub4dc \ub300\uae30\n    await screen.findAllByRole('listitem', { name: /comment/i })\n\n    // \uc785\ub825 \uc5c6\uc774 \uc81c\ucd9c\n    await user.click(screen.getByRole('button', { name: /\ub4f1\ub85d/i }))\n\n    // \uc720\ud6a8\uc131 \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud45c\uc2dc \ud655\uc778\n    // (\ucef4\ud3ec\ub10c\ud2b8\uac00 role=\"alert\" \ub610\ub294 aria-invalid\ub85c \uc5d0\ub7ec\ub97c \uc54c\ub9b0\ub2e4\uace0 \uac00\uc815)\n    const errorMessage = await screen.findByRole('alert')\n    expect(errorMessage).toHaveTextContent(/\ub313\uae00\uc744 \uc785\ub825\ud574\uc8fc\uc138\uc694/i)\n\n    // \ubaa9\ub85d \uc544\uc774\ud15c \uc218\uac00 \ubcc0\ud558\uc9c0 \uc54a\uc74c (POST\uac00 \ud638\ucd9c\ub418\uc9c0 \uc54a\uc74c)\n    const comments = screen.getAllByRole('listitem', { name: /comment/i })\n    expect(comments).toHaveLength(INITIAL_COMMENTS.length)\n\n    // MSW\uc758 onUnhandledRequest: 'error' \uc124\uc815\uc774 POST \uc694\uccad\uc744 \uc7a1\uc73c\uba74 \ud14c\uc2a4\ud2b8\uac00 \uc790\ub3d9 \uc2e4\ud328\ud558\ubbc0\ub85c\n    // \ubcc4\ub3c4 \uc2a4\ud30c\uc774 \uc5c6\uc774\ub3c4 API \ubbf8\ud638\ucd9c\uc744 \uac80\uc99d\ud560 \uc218 \uc788\ub2e4.\n  })\n\n  // \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  // \uc2dc\ub098\ub9ac\uc624 3: API \uc624\ub958 \u2014 \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud45c\uc2dc + \uc785\ub825\uac12 \uc720\uc9c0\n  // \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  test('API \uc624\ub958 \uc2dc \uc5d0\ub7ec \uba54\uc2dc\uc9c0\ub97c \ud45c\uc2dc\ud558\uace0 \uc785\ub825\uac12\uc744 \uc720\uc9c0\ud55c\ub2e4', async () => {\n    const user = userEvent.setup()\n\n    server.use(\n      http.get(`/api/posts/${POST_ID}/comments`, () =>\n        HttpResponse.json(INITIAL_COMMENTS)\n      ),\n      // \ub7f0\ud0c0\uc784 \uc624\ubc84\ub77c\uc774\ub4dc: POST \u2192 500 \uc5d0\ub7ec\n      http.post(`/api/posts/:id/comments`, () =>\n        HttpResponse.json({ message: '\uc11c\ubc84 \ub0b4\ubd80 \uc624\ub958\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4.' }, { status: 500 })\n      )\n    )\n\n    renderWithProviders(<PostDetail postId={POST_ID} />)\n\n    // \ucd08\uae30 \ubaa9\ub85d \ub85c\ub4dc \ub300\uae30\n    await screen.findAllByRole('listitem', { name: /comment/i })\n\n    const INPUT_TEXT = '\uc624\ub958 \uc0c1\ud669\uc5d0\uc11c \uc791\uc131 \uc911\uc778 \ub313\uae00'\n    const textarea = screen.getByLabelText(/\ub313\uae00 \uc785\ub825/i)\n    await user.type(textarea, INPUT_TEXT)\n    await user.click(screen.getByRole('button', { name: /\ub4f1\ub85d/i }))\n\n    // \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud45c\uc2dc \ud655\uc778\n    const errorAlert = await screen.findByRole('alert')\n    expect(errorAlert).toHaveTextContent(/\uc11c\ubc84 \ub0b4\ubd80 \uc624\ub958/i)\n\n    // \uc785\ub825\uac12\uc774 \uc720\uc9c0\ub418\uc5b4 \uc788\ub294\uc9c0 \ud655\uc778 (\ub9ac\uc14b\ud558\uc9c0 \uc54a\uc74c)\n    expect(textarea).toHaveValue(INPUT_TEXT)\n\n    // \ubaa9\ub85d \uc544\uc774\ud15c \uc218\uac00 \ubcc0\ud558\uc9c0 \uc54a\uc74c (\uc11c\ubc84 \uc800\uc7a5 \uc2e4\ud328)\n    const comments = screen.getAllByRole('listitem', { name: /comment/i })\n    expect(comments).toHaveLength(INITIAL_COMMENTS.length)\n  })\n\n  // \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  // \ubcf4\uc870 \uc2dc\ub098\ub9ac\uc624: \ub313\uae00 \ubaa9\ub85d \ub85c\ub4dc \uc911 \ub85c\ub529 \u2192 \uc131\uacf5 \uc0c1\ud0dc \uc804\ud658 \ud655\uc778\n  // (waitForElementToBeRemoved \ud65c\uc6a9 \uc608\uc2dc)\n  // \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  test('\ub313\uae00 \ubaa9\ub85d \ub85c\ub529 \u2192 \uc131\uacf5 \uc0c1\ud0dc\ub85c \uc804\ud658\ub418\uba70 \ub85c\ub529 \uc778\ub514\ucf00\uc774\ud130\uac00 \uc0ac\ub77c\uc9c4\ub2e4', async () => {\n    server.use(\n      http.get(`/api/posts/${POST_ID}/comments`, () =>\n        HttpResponse.json(INITIAL_COMMENTS)\n      )\n    )\n\n    renderWithProviders(<PostDetail postId={POST_ID} />)\n\n    // \ub85c\ub529 \uc778\ub514\ucf00\uc774\ud130\uac00 \ud45c\uc2dc\ub418\uc5c8\ub2e4\uac00 \uc0ac\ub77c\uc9c0\ub294 \uac83\uc744 \ud655\uc778\n    // (\ucef4\ud3ec\ub10c\ud2b8\uac00 aria-label=\"\ub313\uae00 \ub85c\ub529 \uc911\" \ub610\ub294 role=\"progressbar\"\ub97c \ub80c\ub354\ub9c1\ud55c\ub2e4\uace0 \uac00\uc815)\n    await waitForElementToBeRemoved(\n      () => screen.queryByRole('progressbar'),\n      { timeout: 3000 }\n    )\n\n    // \uc131\uacf5 \uc0c1\ud0dc: \ub313\uae00 \ubaa9\ub85d \ud45c\uc2dc\n    const comments = screen.getAllByRole('listitem', { name: /comment/i })\n    expect(comments).toHaveLength(INITIAL_COMMENTS.length)\n\n    expect(screen.getByText('\uccab \ubc88\uc9f8 \ub313\uae00\uc785\ub2c8\ub2e4.')).toBeInTheDocument()\n    expect(screen.getByText('\ub450 \ubc88\uc9f8 \ub313\uae00\uc785\ub2c8\ub2e4.')).toBeInTheDocument()\n  })\n})\n"}], "grading": {"eval_id": 1, "eval_name": "comment-flow", "run_type": "with_skill", "expectations": [{"text": "MSW server.use()\ub85c \ub7f0\ud0c0\uc784 \ud578\ub4e4\ub7ec \uc624\ubc84\ub77c\uc774\ub4dc\ub97c \uc0ac\uc6a9\ud55c\ub2e4 (API \uc624\ub958 \ucf00\uc774\uc2a4)", "passed": true, "evidence": "\uc2dc\ub098\ub9ac\uc624 3\uc5d0\uc11c server.use(http.post(..., () => HttpResponse.json({...}, { status: 500 }))) \ub7f0\ud0c0\uc784 \uc624\ubc84\ub77c\uc774\ub4dc \uc0ac\uc6a9"}, {"text": "\ube44\ub3d9\uae30 \ud328\ud134(findBy*, waitFor, waitForElementToBeRemoved)\uc744 \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "waitForElementToBeRemoved \uc0ac\uc6a9(\uc2dc\ub098\ub9ac\uc624 4), findAllByRole \uc0ac\uc6a9(\ubaa8\ub4e0 \uc2dc\ub098\ub9ac\uc624), findByRole \uc0ac\uc6a9(\uc2dc\ub098\ub9ac\uc624 2,3)"}, {"text": "\uc131\uacf5 \ud6c4 \uc785\ub825\ucc3d \ucd08\uae30\ud654\ub97c \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "\uc2dc\ub098\ub9ac\uc624 1: expect(textarea).toHaveValue('') \u2014 \uba85\uc2dc\uc801 \ucd08\uae30\ud654 \uac80\uc99d"}, {"text": "API \uc624\ub958 \uc2dc \uc785\ub825\uac12 \uc720\uc9c0\ub97c \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "\uc2dc\ub098\ub9ac\uc624 3: expect(textarea).toHaveValue(INPUT_TEXT) \u2014 \uc5d0\ub7ec \ud6c4 \uc785\ub825\uac12 \ubcf4\uc874 \ud655\uc778"}, {"text": "\uc131\uacf5/\uc720\ud6a8\uc131 \uc2e4\ud328/API \uc624\ub958 3\uac00\uc9c0 \ucf00\uc774\uc2a4\uac00 \uc788\ub2e4", "passed": true, "evidence": "4\uac1c test \ube14\ub85d: \uc791\uc131 \uc131\uacf5, \uc720\ud6a8\uc131 \uc2e4\ud328, API \uc624\ub958, \ub85c\ub529\u2192\uc131\uacf5 \uc804\ud658(\ubcf4\ub108\uc2a4)"}], "pass_rate": 1.0, "notes": "SKILL.md Phase 3 \uc2dc\ub098\ub9ac\uc624 2 \ud328\ud134\uc744 \ub9e4\uc6b0 \ucda9\uc2e4\ud558\uac8c \ub530\ub984. afterEach server.resetHandlers() \ud3ec\ud568, waitForElementToBeRemoved \ud65c\uc6a9 \uc608\uc2dc \ud3ec\ud568"}}, {"id": "eval-1-comment-flow-without_skill", "prompt": "\ub313\uae00 \uae30\ub2a5 \ud1b5\ud569 \ud14c\uc2a4\ud2b8 \uc9dc\uc918. React Query v5 + MSW v2 \ud658\uacbd\uc774\uc57c. PostDetail \ud398\uc774\uc9c0\uc5d0 \ub313\uae00 \ubaa9\ub85d(CommentList)\uc774\ub791 \ub313\uae00 \uc791\uc131 \ud3fc(CommentForm)\uc774 \uac19\uc774 \uc788\uc5b4. \ud3fc\uc5d0\uc11c \uc81c\ucd9c\ud558\uba74 POST /api/posts/:id/comments \ud638\ucd9c\ud558\uace0, \uc131\uacf5\ud558\uba74 \ubaa9\ub85d\uc5d0 \uc0c8 \ub313\uae00\uc774 \ucd94\uac00\ub418\uace0 \uc785\ub825\ucc3d\uc774 \ucd08\uae30\ud654\ub3fc. API \uc2e4\ud328 \uc2dc\uc5d0\ub294 \uc5d0\ub7ec \uba54\uc2dc\uc9c0 \ud45c\uc2dc\ud558\uace0 \uc785\ub825\uac12 \uc720\uc9c0\ud574\uc57c \ud574. renderWithProviders\ub294 \uc774\ubbf8 QueryClientProvider + MemoryRouter\ub85c \uc124\uc815\ub418\uc5b4 \uc788\uc5b4(src/test-utils.tsx\uc5d0 \uc788\uc74c).", "eval_id": 1, "outputs": [{"name": "post-detail.integration.test.tsx", "type": "text", "content": "// src/pages/PostDetail/PostDetail.integration.test.tsx\n// React Query v5 + MSW v2 \ud1b5\ud569 \ud14c\uc2a4\ud2b8 \u2014 \ub313\uae00 \uae30\ub2a5 \ud750\ub984\nimport { http, HttpResponse, delay } from 'msw'\nimport { setupServer } from 'msw/node'\nimport { screen, waitFor, within } from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\nimport { renderWithProviders } from 'src/test-utils'\nimport { PostDetail } from 'src/pages/PostDetail'\n\n// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n// \ud53d\uc2a4\ucc98\n// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst POST_ID = 42\n\nconst INITIAL_COMMENTS = [\n  { id: 1, author: '\ud64d\uae38\ub3d9', body: '\uccab \ubc88\uc9f8 \ub313\uae00\uc785\ub2c8\ub2e4.', createdAt: '2026-04-01T00:00:00Z' },\n  { id: 2, author: '\uc774\uc21c\uc2e0', body: '\ub450 \ubc88\uc9f8 \ub313\uae00\uc785\ub2c8\ub2e4.', createdAt: '2026-04-02T00:00:00Z' },\n]\n\nconst NEW_COMMENT = {\n  id: 3,\n  author: '\uac15\uac10\ucc2c',\n  body: '\uc0c8\ub85c \uc791\uc131\ud55c \ub313\uae00',\n  createdAt: '2026-04-08T00:00:00Z',\n}\n\n// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n// MSW \uc11c\ubc84 \uc124\uc815\n// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst server = setupServer(\n  // GET /api/posts/:id/comments \u2014 \ucd08\uae30 \ubaa9\ub85d \ubc18\ud658\n  http.get(`/api/posts/${POST_ID}/comments`, async () => {\n    await delay(10)\n    return HttpResponse.json(INITIAL_COMMENTS, { status: 200 })\n  }),\n\n  // POST /api/posts/:id/comments \u2014 \uc131\uacf5 \ucf00\uc774\uc2a4 (\uae30\ubcf8 \ud578\ub4e4\ub7ec)\n  http.post(`/api/posts/${POST_ID}/comments`, async ({ request }) => {\n    const body = await request.json() as { body: string }\n    await delay(10)\n    return HttpResponse.json(\n      { ...NEW_COMMENT, body: body.body },\n      { status: 201 }\n    )\n  })\n)\n\nbeforeAll(() => server.listen({ onUnhandledRequest: 'error' }))\nafterEach(() => server.resetHandlers())\nafterAll(() => server.close())\n\n// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n// \ud5ec\ud37c\n// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n/** PostDetail \ud398\uc774\uc9c0\ub97c \ub80c\ub354\ud558\uace0 \ub313\uae00 \ubaa9\ub85d\uc774 \ub098\ud0c0\ub0a0 \ub54c\uae4c\uc9c0 \ub300\uae30 */\nasync function renderAndWaitForComments() {\n  renderWithProviders(<PostDetail postId={POST_ID} />, { route: `/posts/${POST_ID}` })\n\n  // \ub313\uae00 \ubaa9\ub85d \ub85c\ub529 \uc644\ub8cc \ub300\uae30\n  await waitFor(() => {\n    expect(screen.getByText(INITIAL_COMMENTS[0].body)).toBeInTheDocument()\n  })\n}\n\n// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n// \ud14c\uc2a4\ud2b8 \uc2a4\uc704\ud2b8\n// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ndescribe('PostDetail \u2014 \ub313\uae00 \ud1b5\ud569 \ud14c\uc2a4\ud2b8', () => {\n  // \u2500\u2500 1. \ucd08\uae30 \ub80c\ub354 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  describe('\ucd08\uae30 \ub80c\ub354', () => {\n    it('\uae30\uc874 \ub313\uae00 \ubaa9\ub85d\uc744 \ud654\uba74\uc5d0 \ud45c\uc2dc\ud55c\ub2e4', async () => {\n      await renderAndWaitForComments()\n\n      expect(screen.getByText(INITIAL_COMMENTS[0].body)).toBeInTheDocument()\n      expect(screen.getByText(INITIAL_COMMENTS[1].body)).toBeInTheDocument()\n    })\n\n    it('\ub313\uae00 \uc791\uc131 \ud3fc\uc758 \ud14d\uc2a4\ud2b8\uc5d0\uc5b4\ub9ac\uc5b4\uac00 \ube44\uc5b4 \uc788\ub2e4', async () => {\n      await renderAndWaitForComments()\n\n      const textarea = screen.getByRole('textbox', { name: /\ub313\uae00/i })\n      expect(textarea).toHaveValue('')\n    })\n  })\n\n  // \u2500\u2500 2. \ub313\uae00 \uc81c\ucd9c \uc131\uacf5 \ud50c\ub85c\uc6b0 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  describe('\ub313\uae00 \uc81c\ucd9c \uc131\uacf5', () => {\n    it('\ud3fc \uc81c\ucd9c \uc2dc POST /api/posts/:id/comments\ub97c \ud638\ucd9c\ud55c\ub2e4', async () => {\n      const user = userEvent.setup()\n      let capturedBody: unknown = null\n\n      server.use(\n        http.post(`/api/posts/${POST_ID}/comments`, async ({ request }) => {\n          capturedBody = await request.json()\n          return HttpResponse.json({ ...NEW_COMMENT }, { status: 201 })\n        })\n      )\n\n      await renderAndWaitForComments()\n\n      const textarea = screen.getByRole('textbox', { name: /\ub313\uae00/i })\n      await user.type(textarea, NEW_COMMENT.body)\n      await user.click(screen.getByRole('button', { name: /\uc791\uc131|\uc81c\ucd9c|\ub4f1\ub85d/i }))\n\n      await waitFor(() => {\n        expect(capturedBody).toMatchObject({ body: NEW_COMMENT.body })\n      })\n    })\n\n    it('\uc131\uacf5 \uc751\ub2f5 \ud6c4 \uc0c8 \ub313\uae00\uc774 \ubaa9\ub85d\uc5d0 \ucd94\uac00\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n      await renderAndWaitForComments()\n\n      const textarea = screen.getByRole('textbox', { name: /\ub313\uae00/i })\n      await user.type(textarea, NEW_COMMENT.body)\n      await user.click(screen.getByRole('button', { name: /\uc791\uc131|\uc81c\ucd9c|\ub4f1\ub85d/i }))\n\n      await waitFor(() => {\n        expect(screen.getByText(NEW_COMMENT.body)).toBeInTheDocument()\n      })\n\n      // \uae30\uc874 \ub313\uae00\ub3c4 \uc720\uc9c0\n      expect(screen.getByText(INITIAL_COMMENTS[0].body)).toBeInTheDocument()\n      expect(screen.getByText(INITIAL_COMMENTS[1].body)).toBeInTheDocument()\n    })\n\n    it('\uc131\uacf5 \uc751\ub2f5 \ud6c4 \uc785\ub825\ucc3d\uc774 \ucd08\uae30\ud654\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n      await renderAndWaitForComments()\n\n      const textarea = screen.getByRole('textbox', { name: /\ub313\uae00/i })\n      await user.type(textarea, NEW_COMMENT.body)\n      await user.click(screen.getByRole('button', { name: /\uc791\uc131|\uc81c\ucd9c|\ub4f1\ub85d/i }))\n\n      await waitFor(() => {\n        expect(screen.getByText(NEW_COMMENT.body)).toBeInTheDocument()\n      })\n\n      expect(textarea).toHaveValue('')\n    })\n\n    it('\uc81c\ucd9c \uc911 \ubc84\ud2bc\uc774 \ube44\ud65c\uc131\ud654(\ub610\ub294 \ub85c\ub529 \ud45c\uc2dc)\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      // \uc751\ub2f5 \uc9c0\uc5f0\uc744 \ub298\ub824 \ub85c\ub529 \uc0c1\ud0dc\ub97c \uad00\ucc30\ud560 \uc2dc\uac04 \ud655\ubcf4\n      server.use(\n        http.post(`/api/posts/${POST_ID}/comments`, async () => {\n          await delay(200)\n          return HttpResponse.json(NEW_COMMENT, { status: 201 })\n        })\n      )\n\n      await renderAndWaitForComments()\n\n      const textarea = screen.getByRole('textbox', { name: /\ub313\uae00/i })\n      await user.type(textarea, NEW_COMMENT.body)\n\n      const submitButton = screen.getByRole('button', { name: /\uc791\uc131|\uc81c\ucd9c|\ub4f1\ub85d/i })\n      await user.click(submitButton)\n\n      // \uc694\uccad \uc9c4\ud589 \uc911 \ubc84\ud2bc \ube44\ud65c\uc131\ud654 \ub610\ub294 \ub85c\ub529 \ud14d\uc2a4\ud2b8 \ud45c\uc2dc \ud655\uc778\n      expect(\n        submitButton.hasAttribute('disabled') ||\n        /\ub85c\ub529|\uc804\uc1a1 \uc911|submitting/i.test(submitButton.textContent ?? '')\n      ).toBe(true)\n\n      // \uc644\ub8cc \ud6c4 \uc815\uc0c1 \ubcf5\uadc0\n      await waitFor(() => {\n        expect(screen.getByText(NEW_COMMENT.body)).toBeInTheDocument()\n      })\n    })\n  })\n\n  // \u2500\u2500 3. \ub313\uae00 \uc81c\ucd9c \uc2e4\ud328 \ud50c\ub85c\uc6b0 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  describe('\ub313\uae00 \uc81c\ucd9c \uc2e4\ud328', () => {\n    beforeEach(() => {\n      // POST\ub97c 500 \uc5d0\ub7ec\ub85c \uc624\ubc84\ub77c\uc774\ub4dc\n      server.use(\n        http.post(`/api/posts/${POST_ID}/comments`, async () => {\n          await delay(10)\n          return HttpResponse.json(\n            { message: '\ub313\uae00 \ub4f1\ub85d\uc5d0 \uc2e4\ud328\ud588\uc2b5\ub2c8\ub2e4. \uc7a0\uc2dc \ud6c4 \ub2e4\uc2dc \uc2dc\ub3c4\ud574\uc8fc\uc138\uc694.' },\n            { status: 500 }\n          )\n        })\n      )\n    })\n\n    it('API \uc2e4\ud328 \uc2dc \uc5d0\ub7ec \uba54\uc2dc\uc9c0\ub97c \ud45c\uc2dc\ud55c\ub2e4', async () => {\n      const user = userEvent.setup()\n      await renderAndWaitForComments()\n\n      await user.type(screen.getByRole('textbox', { name: /\ub313\uae00/i }), NEW_COMMENT.body)\n      await user.click(screen.getByRole('button', { name: /\uc791\uc131|\uc81c\ucd9c|\ub4f1\ub85d/i }))\n\n      await waitFor(() => {\n        expect(\n          screen.getByRole('alert') ||\n          screen.getByText(/\uc2e4\ud328|\uc624\ub958|error/i)\n        ).toBeInTheDocument()\n      })\n    })\n\n    it('API \uc2e4\ud328 \ud6c4 \uc785\ub825\uac12\uc774 \uc720\uc9c0\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n      await renderAndWaitForComments()\n\n      const textarea = screen.getByRole('textbox', { name: /\ub313\uae00/i })\n      await user.type(textarea, NEW_COMMENT.body)\n      await user.click(screen.getByRole('button', { name: /\uc791\uc131|\uc81c\ucd9c|\ub4f1\ub85d/i }))\n\n      await waitFor(() => {\n        expect(\n          screen.getByRole('alert') ||\n          screen.getByText(/\uc2e4\ud328|\uc624\ub958|error/i)\n        ).toBeInTheDocument()\n      })\n\n      // \uc785\ub825\uac12 \ubcf4\uc874\n      expect(textarea).toHaveValue(NEW_COMMENT.body)\n    })\n\n    it('API \uc2e4\ud328 \ud6c4 \ubaa9\ub85d\uc5d0 \uc0c8 \ub313\uae00\uc774 \ucd94\uac00\ub418\uc9c0 \uc54a\ub294\ub2e4', async () => {\n      const user = userEvent.setup()\n      await renderAndWaitForComments()\n\n      await user.type(screen.getByRole('textbox', { name: /\ub313\uae00/i }), NEW_COMMENT.body)\n      await user.click(screen.getByRole('button', { name: /\uc791\uc131|\uc81c\ucd9c|\ub4f1\ub85d/i }))\n\n      await waitFor(() => {\n        expect(\n          screen.getByRole('alert') ||\n          screen.getByText(/\uc2e4\ud328|\uc624\ub958|error/i)\n        ).toBeInTheDocument()\n      })\n\n      // \uae30\uc874 \ub313\uae00 2\uac1c\ub9cc \uc874\uc7ac\n      const commentItems = screen.getAllByRole('listitem')\n      expect(commentItems).toHaveLength(INITIAL_COMMENTS.length)\n    })\n\n    it('API \uc2e4\ud328 \ud6c4 \uc7ac\uc2dc\ub3c4\uac00 \uac00\ub2a5\ud558\ub2e4', async () => {\n      const user = userEvent.setup()\n      await renderAndWaitForComments()\n\n      const textarea = screen.getByRole('textbox', { name: /\ub313\uae00/i })\n      await user.type(textarea, NEW_COMMENT.body)\n      await user.click(screen.getByRole('button', { name: /\uc791\uc131|\uc81c\ucd9c|\ub4f1\ub85d/i }))\n\n      await waitFor(() => {\n        expect(\n          screen.getByRole('alert') ||\n          screen.getByText(/\uc2e4\ud328|\uc624\ub958|error/i)\n        ).toBeInTheDocument()\n      })\n\n      // \uc131\uacf5 \uc751\ub2f5\uc73c\ub85c \uad50\uccb4 \ud6c4 \uc7ac\uc2dc\ub3c4\n      server.use(\n        http.post(`/api/posts/${POST_ID}/comments`, async () => {\n          await delay(10)\n          return HttpResponse.json(NEW_COMMENT, { status: 201 })\n        })\n      )\n\n      await user.click(screen.getByRole('button', { name: /\uc791\uc131|\uc81c\ucd9c|\ub4f1\ub85d/i }))\n\n      await waitFor(() => {\n        expect(screen.getByText(NEW_COMMENT.body)).toBeInTheDocument()\n      })\n\n      // \uc7ac\uc2dc\ub3c4 \uc131\uacf5 \ud6c4 \uc785\ub825\ucc3d \ucd08\uae30\ud654\n      expect(textarea).toHaveValue('')\n    })\n  })\n\n  // \u2500\u2500 4. \ub124\ud2b8\uc6cc\ud06c \uc5d0\ub7ec \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  describe('\ub124\ud2b8\uc6cc\ud06c \uc5d0\ub7ec', () => {\n    it('\ub124\ud2b8\uc6cc\ud06c \uc624\ub958 \ubc1c\uc0dd \uc2dc \uc5d0\ub7ec \uba54\uc2dc\uc9c0\ub97c \ud45c\uc2dc\ud558\uace0 \uc785\ub825\uac12\uc744 \uc720\uc9c0\ud55c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      server.use(\n        http.post(`/api/posts/${POST_ID}/comments`, () => {\n          return HttpResponse.error()\n        })\n      )\n\n      await renderAndWaitForComments()\n\n      const textarea = screen.getByRole('textbox', { name: /\ub313\uae00/i })\n      await user.type(textarea, NEW_COMMENT.body)\n      await user.click(screen.getByRole('button', { name: /\uc791\uc131|\uc81c\ucd9c|\ub4f1\ub85d/i }))\n\n      await waitFor(() => {\n        expect(\n          screen.getByRole('alert') ||\n          screen.getByText(/\uc2e4\ud328|\uc624\ub958|\ub124\ud2b8\uc6cc\ud06c|error/i)\n        ).toBeInTheDocument()\n      })\n\n      expect(textarea).toHaveValue(NEW_COMMENT.body)\n    })\n  })\n\n  // \u2500\u2500 5. \ub099\uad00\uc801 \uc5c5\ub370\uc774\ud2b8 (\uad6c\ud604 \uc2dc \ud65c\uc131\ud654) \u2500\u2500\n  describe.skip('\ub099\uad00\uc801 \uc5c5\ub370\uc774\ud2b8 (\uc635\uc154\ub110)', () => {\n    it('\uc694\uccad \uc644\ub8cc \uc804\uc5d0\ub3c4 \uc0c8 \ub313\uae00\uc774 \ubaa9\ub85d\uc5d0 \uba3c\uc800 \ud45c\uc2dc\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      server.use(\n        http.post(`/api/posts/${POST_ID}/comments`, async () => {\n          await delay(500) // \ucda9\ubd84\ud55c \uc9c0\uc5f0\n          return HttpResponse.json(NEW_COMMENT, { status: 201 })\n        })\n      )\n\n      await renderAndWaitForComments()\n\n      const textarea = screen.getByRole('textbox', { name: /\ub313\uae00/i })\n      await user.type(textarea, NEW_COMMENT.body)\n      await user.click(screen.getByRole('button', { name: /\uc791\uc131|\uc81c\ucd9c|\ub4f1\ub85d/i }))\n\n      // \uc751\ub2f5 \uc804\uc5d0 \ub099\uad00\uc801\uc73c\ub85c \ud45c\uc2dc\n      expect(screen.getByText(NEW_COMMENT.body)).toBeInTheDocument()\n    })\n\n    it('\ub099\uad00\uc801 \uc5c5\ub370\uc774\ud2b8 \ud6c4 API \uc2e4\ud328 \uc2dc \ub864\ubc31\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      server.use(\n        http.post(`/api/posts/${POST_ID}/comments`, async () => {\n          await delay(200)\n          return HttpResponse.json({ message: '\uc11c\ubc84 \uc5d0\ub7ec' }, { status: 500 })\n        })\n      )\n\n      await renderAndWaitForComments()\n\n      const textarea = screen.getByRole('textbox', { name: /\ub313\uae00/i })\n      await user.type(textarea, NEW_COMMENT.body)\n      await user.click(screen.getByRole('button', { name: /\uc791\uc131|\uc81c\ucd9c|\ub4f1\ub85d/i }))\n\n      // \ub099\uad00\uc801 \ud45c\uc2dc \ud6c4 \ub864\ubc31\n      await waitFor(() => {\n        expect(screen.queryByText(NEW_COMMENT.body)).not.toBeInTheDocument()\n      })\n    })\n  })\n})\n"}], "grading": {"eval_id": 1, "eval_name": "comment-flow", "run_type": "without_skill", "expectations": [{"text": "MSW server.use()\ub85c \ub7f0\ud0c0\uc784 \ud578\ub4e4\ub7ec \uc624\ubc84\ub77c\uc774\ub4dc\ub97c \uc0ac\uc6a9\ud55c\ub2e4 (API \uc624\ub958 \ucf00\uc774\uc2a4)", "passed": true, "evidence": "server.use()\ub97c beforeEach \ub610\ub294 \uc778\ub77c\uc778\uc73c\ub85c \uc624\ubc84\ub77c\uc774\ub4dc \uc0ac\uc6a9"}, {"text": "\ube44\ub3d9\uae30 \ud328\ud134(findBy*, waitFor, waitForElementToBeRemoved)\uc744 \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "getByRole('textbox'), findAllByRole \ub4f1 \ube44\ub3d9\uae30 \ud328\ud134 \uc0ac\uc6a9"}, {"text": "\uc131\uacf5 \ud6c4 \uc785\ub825\ucc3d \ucd08\uae30\ud654\ub97c \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "\uc785\ub825\ucc3d \ucd08\uae30\ud654 \uac80\uc99d \ud3ec\ud568"}, {"text": "API \uc624\ub958 \uc2dc \uc785\ub825\uac12 \uc720\uc9c0\ub97c \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "\uc5d0\ub7ec \ucf00\uc774\uc2a4\uc5d0\uc11c \uc785\ub825\uac12 \uc720\uc9c0 \ud655\uc778"}, {"text": "\uc131\uacf5/\uc720\ud6a8\uc131 \uc2e4\ud328/API \uc624\ub958 3\uac00\uc9c0 \ucf00\uc774\uc2a4\uac00 \uc788\ub2e4", "passed": true, "evidence": "5\uac1c describe \ube14\ub85d: \ucd08\uae30 \ub80c\ub354, \uc81c\ucd9c \uc131\uacf5, \uc81c\ucd9c \uc2e4\ud328(500), \ub124\ud2b8\uc6cc\ud06c \uc5d0\ub7ec, \ub099\uad00\uc801 \uc5c5\ub370\uc774\ud2b8(skip)"}], "pass_rate": 1.0, "notes": "\uc2a4\ud0ac \uc5c6\uc774\ub3c4 \ucda9\ubd84\ud55c coverage. \uc624\ud788\ub824 \ub099\uad00\uc801 \uc5c5\ub370\uc774\ud2b8 \ud328\ud134\uae4c\uc9c0 \ucd94\uac00\ud558\uc5ec \ub354 \ub9ce\uc740 \ucf00\uc774\uc2a4\ub97c \uc0dd\uc131\ud568"}}, {"id": "eval-2-cart-flow-with_skill", "prompt": "\uc7a5\ubc14\uad6c\ub2c8 \ud1b5\ud569 \ud14c\uc2a4\ud2b8 \uc791\uc131\ud574\uc918...", "eval_id": 2, "outputs": [{"name": "cart.integration.test.tsx", "type": "text", "content": "/**\n * \uc7a5\ubc14\uad6c\ub2c8 \ud1b5\ud569 \ud14c\uc2a4\ud2b8\n *\n * \uac80\uc99d \ubc94\uc704:\n *  - ProductCard \u2192 Header \uce74\uc6b4\ud2b8 \ud06c\ub85c\uc2a4 \ucef4\ud3ec\ub10c\ud2b8 \uc0c1\ud0dc \uc5f0\ub3d9 (Zustand)\n *  - \uc5ec\ub7ec \uc0c1\ud488 \ucd94\uac00 \uc2dc \ub204\uc801 \uce74\uc6b4\ud2b8 \ubc18\uc601\n *  - CartPage \ucd1d \uae08\uc561 \uacc4\uc0b0 (\uac00\uaca9 \u00d7 \uc218\ub7c9 \ud569\uc0b0)\n *  - \uc7a5\ubc14\uad6c\ub2c8 \ube44\uc5b4\uc788\uc744 \ub54c \ube48 \uc0c1\ud0dc UI \ud45c\uc2dc\n *\n * \uc804\uc81c \uc870\uac74:\n *  - useCartStore: Zustand \uc2a4\ud1a0\uc5b4 (items, addItem, removeItem, clearCart)\n *  - Header: \uc7a5\ubc14\uad6c\ub2c8 \uc544\uc774\ucf58 + aria-label=\"\uc7a5\ubc14\uad6c\ub2c8 ({n}\uac1c)\" \ud45c\uc2dc\n *  - ProductCard: \"\uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00\" \ubc84\ud2bc\uc73c\ub85c addItem \ud638\ucd9c\n *  - CartPage: \uc544\uc774\ud15c \ubaa9\ub85d + \ucd1d \uae08\uc561(price \u00d7 quantity \ud569\uc0b0) \ud45c\uc2dc\n */\n\nimport React from 'react'\nimport { render, screen, within } from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\n\n// ------------------------------------------------------------------\n// Zustand \uc2a4\ud1a0\uc5b4 \u2014 \uc2e4\uc81c \ud504\ub85c\uc81d\ud2b8 \uacbd\ub85c\ub85c \uad50\uccb4\ud558\uc138\uc694\n// import { useCartStore } from '@/store/useCartStore'\n// ------------------------------------------------------------------\n\n// \u2500\u2500 \uc778\ub77c\uc778 \uc2a4\ud141 (\uc2e4\uc81c \uc18c\uc2a4 \uc5f0\uacb0 \uc804 \ub3d9\uc791 \uac80\uc99d\uc6a9) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nimport { create } from 'zustand'\n\ninterface CartItem {\n  id: number\n  name: string\n  price: number\n  quantity: number\n}\n\ninterface CartState {\n  items: CartItem[]\n  addItem: (item: Omit<CartItem, 'quantity'>) => void\n  removeItem: (id: number) => void\n  clearCart: () => void\n}\n\nexport const useCartStore = create<CartState>((set) => ({\n  items: [],\n  addItem: (item) =>\n    set((state) => {\n      const existing = state.items.find((i) => i.id === item.id)\n      if (existing) {\n        return {\n          items: state.items.map((i) =>\n            i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i\n          ),\n        }\n      }\n      return { items: [...state.items, { ...item, quantity: 1 }] }\n    }),\n  removeItem: (id) =>\n    set((state) => ({ items: state.items.filter((i) => i.id !== id) })),\n  clearCart: () => set({ items: [] }),\n}))\n\n// \u2500\u2500 \uc2a4\ud141 \ucef4\ud3ec\ub10c\ud2b8 (\uc2e4\uc81c \ucef4\ud3ec\ub10c\ud2b8 import \uc804 \ub3d9\uc791 \uac80\uc99d\uc6a9) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n/**\n * Header: \uc7a5\ubc14\uad6c\ub2c8 \uc544\uc774\ucf58 + \ucd1d \uc544\uc774\ud15c \uac1c\uc218 \ubc30\uc9c0\n * aria-label=\"\uc7a5\ubc14\uad6c\ub2c8 ({n}\uac1c)\" \ub85c \uc811\uadfc\uc131 \ub808\uc774\ube14 \uc81c\uacf5\n */\nfunction Header() {\n  const items = useCartStore((state) => state.items)\n  const totalCount = items.reduce((sum, item) => sum + item.quantity, 0)\n\n  return (\n    <header>\n      <nav>\n        <span>My Shop</span>\n        <a\n          href=\"/cart\"\n          aria-label={`\uc7a5\ubc14\uad6c\ub2c8 (${totalCount}\uac1c)`}\n          data-testid=\"cart-icon\"\n        >\n          \ud83d\uded2 <span data-testid=\"cart-count\">{totalCount}</span>\n        </a>\n      </nav>\n    </header>\n  )\n}\n\ninterface ProductCardProps {\n  product: Omit<CartItem, 'quantity'>\n}\n\n/**\n * ProductCard: \uc0c1\ud488 \uc815\ubcf4 + \"\uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00\" \ubc84\ud2bc\n */\nfunction ProductCard({ product }: ProductCardProps) {\n  const addItem = useCartStore((state) => state.addItem)\n\n  return (\n    <article aria-label={product.name}>\n      <h3>{product.name}</h3>\n      <p>{product.price.toLocaleString()}\uc6d0</p>\n      <button\n        type=\"button\"\n        onClick={() => addItem(product)}\n        aria-label={`${product.name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00`}\n      >\n        \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00\n      </button>\n    </article>\n  )\n}\n\n/**\n * CartPage: \uc7a5\ubc14\uad6c\ub2c8 \ubaa9\ub85d + \ucd1d \uae08\uc561\n * \ucd1d \uae08\uc561 = \u03a3 (price \u00d7 quantity)\n */\nfunction CartPage() {\n  const items = useCartStore((state) => state.items)\n  const removeItem = useCartStore((state) => state.removeItem)\n\n  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0)\n\n  if (items.length === 0) {\n    return (\n      <main>\n        <h1>\uc7a5\ubc14\uad6c\ub2c8</h1>\n        <p>\uc7a5\ubc14\uad6c\ub2c8\uac00 \ube44\uc5b4 \uc788\uc2b5\ub2c8\ub2e4.</p>\n      </main>\n    )\n  }\n\n  return (\n    <main>\n      <h1>\uc7a5\ubc14\uad6c\ub2c8</h1>\n      <table>\n        <thead>\n          <tr>\n            <th>\uc0c1\ud488\uba85</th>\n            <th>\uc218\ub7c9</th>\n            <th>\uae08\uc561</th>\n            <th>\uc0ad\uc81c</th>\n          </tr>\n        </thead>\n        <tbody>\n          {items.map((item) => (\n            <tr key={item.id} aria-label={item.name}>\n              <td>{item.name}</td>\n              <td>{item.quantity}</td>\n              <td>{(item.price * item.quantity).toLocaleString()}\uc6d0</td>\n              <td>\n                <button\n                  type=\"button\"\n                  onClick={() => removeItem(item.id)}\n                  aria-label={`${item.name} \uc0ad\uc81c`}\n                >\n                  \uc0ad\uc81c\n                </button>\n              </td>\n            </tr>\n          ))}\n        </tbody>\n      </table>\n      <section aria-label=\"\uc8fc\ubb38 \uc694\uc57d\">\n        <strong>\ucd1d \ud569\uacc4: {total.toLocaleString()}\uc6d0</strong>\n      </section>\n    </main>\n  )\n}\n// \u2500\u2500 \uc2a4\ud141 \ucef4\ud3ec\ub10c\ud2b8 \ub05d \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n// ------------------------------------------------------------------\n// \ud14c\uc2a4\ud2b8 \uc2a4\uc704\ud2b8\n// ------------------------------------------------------------------\n\ndescribe('\uc7a5\ubc14\uad6c\ub2c8 \ud1b5\ud569 \ud14c\uc2a4\ud2b8 \u2014 Zustand \ud06c\ub85c\uc2a4 \ucef4\ud3ec\ub10c\ud2b8 \uc0c1\ud0dc \uc5f0\ub3d9', () => {\n  /**\n   * Zustand\ub294 \ubaa8\ub4c8 \uc218\uc900 singleton\uc774\ubbc0\ub85c\n   * \uac01 \ud14c\uc2a4\ud2b8 \uc804\uc5d0 \uc2a4\ud1a0\uc5b4\ub97c \ubc18\ub4dc\uc2dc \ucd08\uae30\ud654\ud55c\ub2e4.\n   * (\ud14c\uc2a4\ud2b8 \uac04 \uc0c1\ud0dc \ub204\uc218 \ubc29\uc9c0)\n   */\n  beforeEach(() => {\n    useCartStore.setState({ items: [] })\n  })\n\n  // ----------------------------------------------------------------\n  // 1. \ud06c\ub85c\uc2a4 \ucef4\ud3ec\ub10c\ud2b8: ProductCard \u2192 Header \uce74\uc6b4\ud2b8 \uc5f0\ub3d9\n  // ----------------------------------------------------------------\n  describe('ProductCard \u2192 Header \uce74\uc6b4\ud2b8 \ud06c\ub85c\uc2a4 \ucef4\ud3ec\ub10c\ud2b8 \uc5f0\ub3d9', () => {\n    const product = { id: 1, name: '\ubb34\uc120 \ub9c8\uc6b0\uc2a4', price: 29000 }\n\n    test('\ucd08\uae30 \ub80c\ub354\ub9c1 \uc2dc Header \uc7a5\ubc14\uad6c\ub2c8 \uce74\uc6b4\ud2b8\ub294 0\uc774\ub2e4', () => {\n      render(\n        <>\n          <Header />\n          <ProductCard product={product} />\n        </>\n      )\n\n      expect(screen.getByLabelText('\uc7a5\ubc14\uad6c\ub2c8 (0\uac1c)')).toBeInTheDocument()\n    })\n\n    test('\"\uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00\" \ud074\ub9ad \uc2dc Header \uce74\uc6b4\ud2b8\uac00 1\ub85c \uc989\uc2dc \uc99d\uac00\ud55c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      render(\n        <>\n          <Header />\n          <ProductCard product={product} />\n        </>\n      )\n\n      // \ucd08\uae30 \uc0c1\ud0dc \ud655\uc778\n      expect(screen.getByLabelText('\uc7a5\ubc14\uad6c\ub2c8 (0\uac1c)')).toBeInTheDocument()\n\n      // ProductCard\uc5d0\uc11c \ucd94\uac00\n      await user.click(\n        screen.getByRole('button', { name: `${product.name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00` })\n      )\n\n      // Header \uce74\uc6b4\ud2b8\uac00 \uac19\uc740 Zustand \uc2a4\ud1a0\uc5b4\ub97c \uad6c\ub3c5\ud558\ubbc0\ub85c \uc989\uc2dc \uac31\uc2e0\ub428\n      expect(screen.getByLabelText('\uc7a5\ubc14\uad6c\ub2c8 (1\uac1c)')).toBeInTheDocument()\n    })\n\n    test('\uac19\uc740 \uc0c1\ud488\uc744 \ub450 \ubc88 \ucd94\uac00\ud558\uba74 Header \uce74\uc6b4\ud2b8\ub294 2\uac00 \ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      render(\n        <>\n          <Header />\n          <ProductCard product={product} />\n        </>\n      )\n\n      const addButton = screen.getByRole('button', {\n        name: `${product.name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00`,\n      })\n\n      await user.click(addButton)\n      await user.click(addButton)\n\n      expect(screen.getByLabelText('\uc7a5\ubc14\uad6c\ub2c8 (2\uac1c)')).toBeInTheDocument()\n    })\n\n    test('\uc11c\ub85c \ub2e4\ub978 \uc0c1\ud488 2\uac1c\ub97c \ucd94\uac00\ud558\uba74 Header \uce74\uc6b4\ud2b8\ub294 2\uac00 \ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n      const productA = { id: 1, name: '\ubb34\uc120 \ub9c8\uc6b0\uc2a4', price: 29000 }\n      const productB = { id: 2, name: '\uae30\uacc4\uc2dd \ud0a4\ubcf4\ub4dc', price: 89000 }\n\n      render(\n        <>\n          <Header />\n          <ProductCard product={productA} />\n          <ProductCard product={productB} />\n        </>\n      )\n\n      await user.click(\n        screen.getByRole('button', { name: `${productA.name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00` })\n      )\n      await user.click(\n        screen.getByRole('button', { name: `${productB.name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00` })\n      )\n\n      // \uac01\uac01 quantity 1\uc774\ubbc0\ub85c \ucd1d 2\uac1c\n      expect(screen.getByLabelText('\uc7a5\ubc14\uad6c\ub2c8 (2\uac1c)')).toBeInTheDocument()\n    })\n  })\n\n  // ----------------------------------------------------------------\n  // 2. CartPage \ucd1d \uae08\uc561 \uacc4\uc0b0\n  // ----------------------------------------------------------------\n  describe('CartPage \ucd1d \uae08\uc561 \uacc4\uc0b0', () => {\n    test('\ub2e8\uc77c \uc0c1\ud488\uc758 \ucd1d \uae08\uc561 = price \u00d7 quantity\ub97c \uc62c\ubc14\ub974\uac8c \uacc4\uc0b0\ud55c\ub2e4', () => {\n      // setState\ub85c \ucd08\uae30 \uc0c1\ud0dc\ub97c \uc9c1\uc811 \uc8fc\uc785 (preloadedState \ud328\ud134 \ub300\uc2e0)\n      useCartStore.setState({\n        items: [{ id: 1, name: '\ubb34\uc120 \ub9c8\uc6b0\uc2a4', price: 29000, quantity: 2 }],\n      })\n\n      render(<CartPage />)\n\n      // 29000 \u00d7 2 = 58,000\n      expect(screen.getByText('\ucd1d \ud569\uacc4: 58,000\uc6d0')).toBeInTheDocument()\n    })\n\n    test('\ubcf5\uc218 \uc0c1\ud488\uc758 \ucd1d \uae08\uc561 = \uac01 (price \u00d7 quantity) \ud569\uc0b0\uc744 \uc62c\ubc14\ub974\uac8c \uacc4\uc0b0\ud55c\ub2e4', () => {\n      // \uc0c1\ud488A: 10,000\uc6d0 \u00d7 2 = 20,000\n      // \uc0c1\ud488B: 5,000\uc6d0  \u00d7 1 =  5,000\n      // \ud569\uacc4: 25,000\uc6d0\n      useCartStore.setState({\n        items: [\n          { id: 1, name: '\uc0c1\ud488A', price: 10000, quantity: 2 },\n          { id: 2, name: '\uc0c1\ud488B', price: 5000, quantity: 1 },\n        ],\n      })\n\n      render(<CartPage />)\n\n      expect(screen.getByText('\ucd1d \ud569\uacc4: 25,000\uc6d0')).toBeInTheDocument()\n    })\n\n    test('\uc7a5\ubc14\uad6c\ub2c8 \ud14c\uc774\ube14\uc5d0 \uc62c\ubc14\ub978 \ud589 \uc218\uac00 \ud45c\uc2dc\ub41c\ub2e4 (\ud5e4\ub354 1\ud589 + \uc0c1\ud488 \ud589)', () => {\n      useCartStore.setState({\n        items: [\n          { id: 1, name: '\uc0c1\ud488A', price: 10000, quantity: 2 },\n          { id: 2, name: '\uc0c1\ud488B', price: 5000, quantity: 1 },\n        ],\n      })\n\n      render(<CartPage />)\n\n      // thead 1\ud589 + tbody 2\ud589 = \ucd1d 3\ud589\n      expect(screen.getAllByRole('row')).toHaveLength(3)\n    })\n\n    test('3\uac1c \uc0c1\ud488 \ubcf5\ud569 \uc2dc\ub098\ub9ac\uc624: \ucd1d \uae08\uc561\uc774 \uc815\ud655\ud788 \uacc4\uc0b0\ub41c\ub2e4', () => {\n      // 15,000 \u00d7 3 + 8,000 \u00d7 2 + 50,000 \u00d7 1 = 45,000 + 16,000 + 50,000 = 111,000\n      useCartStore.setState({\n        items: [\n          { id: 1, name: '\uc0c1\ud488A', price: 15000, quantity: 3 },\n          { id: 2, name: '\uc0c1\ud488B', price: 8000, quantity: 2 },\n          { id: 3, name: '\uc0c1\ud488C', price: 50000, quantity: 1 },\n        ],\n      })\n\n      render(<CartPage />)\n\n      expect(screen.getByText('\ucd1d \ud569\uacc4: 111,000\uc6d0')).toBeInTheDocument()\n    })\n\n    test('\uc544\uc774\ud15c \uc0ad\uc81c \ud6c4 \ucd1d \uae08\uc561\uc774 \uc989\uc2dc \uac31\uc2e0\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      useCartStore.setState({\n        items: [\n          { id: 1, name: '\uc0c1\ud488A', price: 10000, quantity: 2 },\n          { id: 2, name: '\uc0c1\ud488B', price: 5000, quantity: 1 },\n        ],\n      })\n\n      render(<CartPage />)\n\n      // \ucd08\uae30: 10,000\u00d72 + 5,000\u00d71 = 25,000\uc6d0\n      expect(screen.getByText('\ucd1d \ud569\uacc4: 25,000\uc6d0')).toBeInTheDocument()\n\n      // \uc0c1\ud488B \uc0ad\uc81c\n      await user.click(screen.getByRole('button', { name: '\uc0c1\ud488B \uc0ad\uc81c' }))\n\n      // \uc0ad\uc81c \ud6c4: 10,000\u00d72 = 20,000\uc6d0\n      expect(screen.getByText('\ucd1d \ud569\uacc4: 20,000\uc6d0')).toBeInTheDocument()\n    })\n  })\n\n  // ----------------------------------------------------------------\n  // 3. \ube48 \uc7a5\ubc14\uad6c\ub2c8 \uc5e3\uc9c0 \ucf00\uc774\uc2a4\n  // ----------------------------------------------------------------\n  describe('\ube48 \uc7a5\ubc14\uad6c\ub2c8 \uc5e3\uc9c0 \ucf00\uc774\uc2a4', () => {\n    test('\uc7a5\ubc14\uad6c\ub2c8\uac00 \ube44\uc5b4\uc788\uc744 \ub54c \ube48 \uc0c1\ud0dc \uba54\uc2dc\uc9c0\uac00 \ud45c\uc2dc\ub41c\ub2e4', () => {\n      render(<CartPage />)\n\n      expect(screen.getByText('\uc7a5\ubc14\uad6c\ub2c8\uac00 \ube44\uc5b4 \uc788\uc2b5\ub2c8\ub2e4.')).toBeInTheDocument()\n    })\n\n    test('\ubaa8\ub4e0 \uc0c1\ud488\uc744 \uc0ad\uc81c\ud558\uba74 \ube48 \uc0c1\ud0dc UI\ub85c \uc804\ud658\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      useCartStore.setState({\n        items: [{ id: 1, name: '\ubb34\uc120 \ub9c8\uc6b0\uc2a4', price: 29000, quantity: 1 }],\n      })\n\n      render(<CartPage />)\n\n      // \uc544\uc774\ud15c \uc874\uc7ac \ud655\uc778\n      expect(screen.getByText('\ucd1d \ud569\uacc4: 29,000\uc6d0')).toBeInTheDocument()\n\n      // \uc720\uc77c\ud55c \uc0c1\ud488 \uc0ad\uc81c\n      await user.click(screen.getByRole('button', { name: '\ubb34\uc120 \ub9c8\uc6b0\uc2a4 \uc0ad\uc81c' }))\n\n      // \ube48 \uc0c1\ud0dc UI\ub85c \uc804\ud658\n      expect(screen.getByText('\uc7a5\ubc14\uad6c\ub2c8\uac00 \ube44\uc5b4 \uc788\uc2b5\ub2c8\ub2e4.')).toBeInTheDocument()\n      expect(screen.queryByText(/\ucd1d \ud569\uacc4/)).not.toBeInTheDocument()\n    })\n  })\n\n  // ----------------------------------------------------------------\n  // 4. E2E \uc720\uc0ac \uc2dc\ub098\ub9ac\uc624: ProductCard \ucd94\uac00 \u2192 CartPage \ubc18\uc601\n  // ----------------------------------------------------------------\n  describe('E2E \uc720\uc0ac \uc2dc\ub098\ub9ac\uc624: \uc0c1\ud488 \ucd94\uac00 \ud6c4 CartPage \ucd1d \uae08\uc561 \ubc18\uc601', () => {\n    test('ProductCard\uc5d0\uc11c \ucd94\uac00\ud55c \uc0c1\ud488\uc774 CartPage \ucd1d \uae08\uc561\uc5d0 \ubc18\uc601\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n      const product = { id: 1, name: '\ubb34\uc120 \ub9c8\uc6b0\uc2a4', price: 29000 }\n\n      // ProductCard\ub85c \uc0c1\ud488 \ucd94\uac00\n      const { unmount } = render(<ProductCard product={product} />)\n\n      await user.click(\n        screen.getByRole('button', { name: `${product.name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00` })\n      )\n\n      unmount()\n\n      // CartPage\uc5d0\uc11c \ud569\uacc4 \ud655\uc778 (\ub3d9\uc77c Zustand \uc2a4\ud1a0\uc5b4 \uacf5\uc720)\n      render(<CartPage />)\n\n      expect(screen.getByText('\ucd1d \ud569\uacc4: 29,000\uc6d0')).toBeInTheDocument()\n    })\n\n    test('\uc5ec\ub7ec \uc0c1\ud488\uc744 \ucd94\uac00 \ud6c4 CartPage\uc5d0\uc11c \ub204\uc801 \ud569\uacc4\uac00 \ud45c\uc2dc\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n      const productA = { id: 1, name: '\ubb34\uc120 \ub9c8\uc6b0\uc2a4', price: 29000 }\n      const productB = { id: 2, name: '\uae30\uacc4\uc2dd \ud0a4\ubcf4\ub4dc', price: 89000 }\n\n      const { unmount } = render(\n        <>\n          <ProductCard product={productA} />\n          <ProductCard product={productB} />\n        </>\n      )\n\n      await user.click(\n        screen.getByRole('button', { name: `${productA.name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00` })\n      )\n      await user.click(\n        screen.getByRole('button', { name: `${productB.name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00` })\n      )\n      // \ubb34\uc120 \ub9c8\uc6b0\uc2a4 \ud55c \ubc88 \ub354 \ucd94\uac00 (quantity: 2)\n      await user.click(\n        screen.getByRole('button', { name: `${productA.name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00` })\n      )\n\n      unmount()\n\n      // 29,000\u00d72 + 89,000\u00d71 = 147,000\n      render(<CartPage />)\n      expect(screen.getByText('\ucd1d \ud569\uacc4: 147,000\uc6d0')).toBeInTheDocument()\n    })\n  })\n})\n"}], "grading": {"eval_id": 2, "eval_name": "cart-flow", "run_type": "with_skill", "expectations": [{"text": "beforeEach\uc5d0\uc11c Zustand \uc2a4\ud1a0\uc5b4\ub97c \ucd08\uae30\ud654\ud55c\ub2e4 (setState \uc0ac\uc6a9)", "passed": true, "evidence": "beforeEach(() => { useCartStore.setState({ items: [] }) }) \u2014 \uc2a4\ud0ac\uc758 Zustand \ud328\ud134 \uc815\ud655\ud788 \uc801\uc6a9"}, {"text": "Header\uc640 ProductCard\ub97c \uac19\uc740 render \uc548\uc5d0 \ud568\uaed8 \ub80c\ub354\ub9c1\ud558\uc5ec \ud06c\ub85c\uc2a4 \ucef4\ud3ec\ub10c\ud2b8 \uc0c1\ud0dc \uacf5\uc720\ub97c \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "render(<><Header /><ProductCard product={product} /></>) \ud328\ud134\uc73c\ub85c \ud06c\ub85c\uc2a4 \ucef4\ud3ec\ub10c\ud2b8 4\uac1c \ud14c\uc2a4\ud2b8"}, {"text": "\uc544\uc774\ud15c \ucd94\uac00 \ud6c4 \uce74\uc6b4\ud2b8 \ubcc0\ud654\ub97c \ud655\uc778\ud55c\ub2e4", "passed": true, "evidence": "getByLabelText('\uc7a5\ubc14\uad6c\ub2c8 (0\uac1c)') \u2192 \ud074\ub9ad \u2192 getByLabelText('\uc7a5\ubc14\uad6c\ub2c8 (1\uac1c)') \uce74\uc6b4\ud2b8 \ubcc0\ud654 \uac80\uc99d"}, {"text": "\ucd1d \uae08\uc561 \uacc4\uc0b0\uc744 \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "getByText('\ucd1d \ud569\uacc4: 25,000\uc6d0'), '\ucd1d \ud569\uacc4: 111,000\uc6d0' \ub4f1 \ub2e4\uc218\uc758 \ucd1d\uc561 \uacc4\uc0b0 \uac80\uc99d"}, {"text": "userEvent\ub97c \uc0ac\uc6a9\ud55c\ub2e4 (fireEvent \ub300\uc2e0)", "passed": true, "evidence": "import userEvent from '@testing-library/user-event' \uc0ac\uc6a9. userEvent.setup() \ubaa8\ub4e0 interaction \ud14c\uc2a4\ud2b8\uc5d0\uc11c \uc0ac\uc6a9"}], "pass_rate": 1.0, "notes": "references/providers-setup.md\uc758 Zustand \ud328\ud134 5\ub97c \uc815\ud655\ud788 \ud65c\uc6a9. \uc544\uc774\ud15c \uc0ad\uc81c \ud6c4 \ucd1d\uc561 \uac31\uc2e0, \ube48 \uc7a5\ubc14\uad6c\ub2c8 \uc5e3\uc9c0 \ucf00\uc774\uc2a4, E2E \uc720\uc0ac \uc2dc\ub098\ub9ac\uc624\uae4c\uc9c0 \ud3ec\ud568. \ub9e4\uc6b0 \uc644\uc131\ub3c4 \ub192\uc74c"}}, {"id": "eval-2-cart-flow-without_skill", "prompt": "\uc7a5\ubc14\uad6c\ub2c8 \ud1b5\ud569 \ud14c\uc2a4\ud2b8 \uc791\uc131\ud574\uc918...", "eval_id": 2, "outputs": [{"name": "cart.integration.test.tsx", "type": "text", "content": "/**\n * \uc7a5\ubc14\uad6c\ub2c8 \ud1b5\ud569 \ud14c\uc2a4\ud2b8\n *\n * \uc2a4\ud0dd: React 18 + Zustand + @testing-library/react + @testing-library/user-event\n *\n * \uac80\uc99d \uc2dc\ub098\ub9ac\uc624:\n *  1. ProductCard\uc5d0\uc11c '\uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00' \ud074\ub9ad \u2192 Header \uce74\uc6b4\ud2b8\uac00 \uc989\uc2dc \uc99d\uac00\n *  2. \uc5ec\ub7ec \uc0c1\ud488\uc744 \ucd94\uac00\ud558\uba74 Header \uce74\uc6b4\ud2b8\uac00 \ub204\uc801 \ubc18\uc601\n *  3. \ub3d9\uc77c \uc0c1\ud488\uc744 \uc5ec\ub7ec \ubc88 \ucd94\uac00\ud558\uba74 \uc218\ub7c9\ub9cc \uc99d\uac00 (\uc911\ubcf5 \ud56d\ubaa9 \uc0dd\uc131 X)\n *  4. CartPage \u2014 \ub2f4\uae34 \uc0c1\ud488\ub4e4\uc758 \ucd1d \uae08\uc561 \uacc4\uc0b0 \uac80\uc99d\n *  5. CartPage \u2014 \uc7a5\ubc14\uad6c\ub2c8\uac00 \ube44\uc5b4\uc788\uc744 \ub54c \ube48 \uc0c1\ud0dc \uba54\uc2dc\uc9c0 \ud45c\uc2dc\n *  6. CartPage \u2014 \uc218\ub7c9 \ubcc0\uacbd \ud6c4 \ucd1d \uae08\uc561 \uc7ac\uacc4\uc0b0\n *  7. CartPage \u2014 \uc544\uc774\ud15c \uc0ad\uc81c \ud6c4 \ucd1d \uae08\uc561 \uc7ac\uacc4\uc0b0\n */\n\nimport React from 'react'\nimport { render, screen, within } from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\nimport { create } from 'zustand'\n\n// ---------------------------------------------------------------------------\n// 1. Zustand Store \uc815\uc758 (\uc2e4\uc81c \ud504\ub85c\uc81d\ud2b8\uc758 src/stores/cartStore.ts \ub97c \ubc18\uc601)\n// ---------------------------------------------------------------------------\n\ninterface CartItem {\n  id: number\n  name: string\n  price: number\n  quantity: number\n}\n\ninterface CartStore {\n  items: CartItem[]\n  addItem: (product: Omit<CartItem, 'quantity'>) => void\n  removeItem: (id: number) => void\n  updateQuantity: (id: number, quantity: number) => void\n  clearCart: () => void\n  totalCount: () => number\n  totalPrice: () => number\n}\n\n/**\n * \ud14c\uc2a4\ud2b8 \uc804\uc6a9 store \ud329\ud1a0\ub9ac.\n *\n * \uac01 \ud14c\uc2a4\ud2b8\uac00 \ub3c5\ub9bd\ub41c \uc778\uc2a4\ud134\uc2a4\ub97c \uc0ac\uc6a9\ud558\ub3c4\ub85d beforeEach\uc5d0\uc11c \uc0c8\ub85c \uc0dd\uc131\ud55c\ub2e4.\n * \uc2e4\uc81c \ud504\ub85c\uc81d\ud2b8\uc5d0\uc11c \uc2f1\uae00\ud134 store\ub97c \uc0ac\uc6a9\ud55c\ub2e4\uba74,\n * beforeEach\uc5d0\uc11c useCartStore.setState({ items: [] }) \ub85c \ucd08\uae30\ud654\ud55c\ub2e4.\n */\nconst createCartStore = () =>\n  create<CartStore>((set, get) => ({\n    items: [],\n\n    addItem: (product) =>\n      set((state) => {\n        const existing = state.items.find((i) => i.id === product.id)\n        if (existing) {\n          return {\n            items: state.items.map((i) =>\n              i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i\n            ),\n          }\n        }\n        return { items: [...state.items, { ...product, quantity: 1 }] }\n      }),\n\n    removeItem: (id) =>\n      set((state) => ({ items: state.items.filter((i) => i.id !== id) })),\n\n    updateQuantity: (id, quantity) =>\n      set((state) => ({\n        items: state.items.map((i) => (i.id === id ? { ...i, quantity } : i)),\n      })),\n\n    clearCart: () => set({ items: [] }),\n\n    totalCount: () => get().items.reduce((sum, i) => sum + i.quantity, 0),\n\n    totalPrice: () =>\n      get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),\n  }))\n\n// ---------------------------------------------------------------------------\n// 2. \ucef4\ud3ec\ub10c\ud2b8 \uc815\uc758 (\uc2e4\uc81c \ud504\ub85c\uc81d\ud2b8 \ucef4\ud3ec\ub10c\ud2b8\ub97c \uc778\ub77c\uc778\uc73c\ub85c \uc7ac\ud604)\n// ---------------------------------------------------------------------------\n\n// --- ProductCard ---\ninterface ProductCardProps {\n  product: { id: number; name: string; price: number }\n  useStore: () => CartStore\n}\n\nfunction ProductCard({ product, useStore }: ProductCardProps) {\n  const addItem = useStore((s) => s.addItem)\n  return (\n    <div data-testid={`product-card-${product.id}`}>\n      <span data-testid=\"product-name\">{product.name}</span>\n      <span data-testid=\"product-price\">{product.price.toLocaleString()}\uc6d0</span>\n      <button\n        onClick={() => addItem(product)}\n        aria-label={`${product.name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00`}\n      >\n        \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00\n      </button>\n    </div>\n  )\n}\n\n// --- Header ---\ninterface HeaderProps {\n  useStore: () => CartStore\n}\n\nfunction Header({ useStore }: HeaderProps) {\n  const totalCount = useStore((s) => s.totalCount())\n  return (\n    <header>\n      <nav>\n        <span aria-label=\"\uc0ac\uc774\ud2b8 \uc774\ub984\">My Shop</span>\n        <button aria-label=\"\uc7a5\ubc14\uad6c\ub2c8\" data-testid=\"cart-icon-button\">\n          \ud83d\uded2\n          {totalCount > 0 && (\n            <span\n              data-testid=\"cart-item-count\"\n              aria-label={`\uc7a5\ubc14\uad6c\ub2c8 \uc0c1\ud488 ${totalCount}\uac1c`}\n            >\n              {totalCount}\n            </span>\n          )}\n        </button>\n      </nav>\n    </header>\n  )\n}\n\n// --- CartPage ---\ninterface CartPageProps {\n  useStore: () => CartStore\n}\n\nfunction CartPage({ useStore }: CartPageProps) {\n  const items = useStore((s) => s.items)\n  const removeItem = useStore((s) => s.removeItem)\n  const updateQuantity = useStore((s) => s.updateQuantity)\n  const totalPrice = useStore((s) => s.totalPrice())\n\n  if (items.length === 0) {\n    return (\n      <main>\n        <p data-testid=\"empty-cart-message\">\uc7a5\ubc14\uad6c\ub2c8\uac00 \ube44\uc5b4\uc788\uc2b5\ub2c8\ub2e4.</p>\n      </main>\n    )\n  }\n\n  return (\n    <main>\n      <h1>\uc7a5\ubc14\uad6c\ub2c8</h1>\n      <ul aria-label=\"\uc7a5\ubc14\uad6c\ub2c8 \ubaa9\ub85d\">\n        {items.map((item) => (\n          <li key={item.id} data-testid={`cart-item-${item.id}`}>\n            <span data-testid=\"item-name\">{item.name}</span>\n            <span data-testid=\"item-unit-price\">{item.price.toLocaleString()}\uc6d0</span>\n            <input\n              type=\"number\"\n              aria-label={`${item.name} \uc218\ub7c9`}\n              value={item.quantity}\n              min={1}\n              onChange={(e) => updateQuantity(item.id, Number(e.target.value))}\n              data-testid={`item-quantity-${item.id}`}\n            />\n            <span data-testid={`item-subtotal-${item.id}`}>\n              {(item.price * item.quantity).toLocaleString()}\uc6d0\n            </span>\n            <button\n              onClick={() => removeItem(item.id)}\n              aria-label={`${item.name} \uc0ad\uc81c`}\n            >\n              \uc0ad\uc81c\n            </button>\n          </li>\n        ))}\n      </ul>\n      <div data-testid=\"cart-total-price\">\n        \ucd1d \uae08\uc561: {totalPrice.toLocaleString()}\uc6d0\n      </div>\n    </main>\n  )\n}\n\n// ---------------------------------------------------------------------------\n// 3. \ud14c\uc2a4\ud2b8\uc6a9 \ub798\ud37c \ucef4\ud3ec\ub10c\ud2b8 \u2014 Header + ProductCard\ub97c \uac19\uc740 store\ub85c \ubb36\uc74c\n// ---------------------------------------------------------------------------\n\ninterface ShopLayoutProps {\n  products: { id: number; name: string; price: number }[]\n  useStore: () => CartStore\n}\n\nfunction ShopLayout({ products, useStore }: ShopLayoutProps) {\n  return (\n    <>\n      <Header useStore={useStore} />\n      <main>\n        {products.map((p) => (\n          <ProductCard key={p.id} product={p} useStore={useStore} />\n        ))}\n      </main>\n    </>\n  )\n}\n\n// ---------------------------------------------------------------------------\n// 4. \ud14c\uc2a4\ud2b8 \ud53d\uc2a4\ucc98\n// ---------------------------------------------------------------------------\n\nconst PRODUCTS = [\n  { id: 1, name: '\ubb34\uc120 \ud0a4\ubcf4\ub4dc', price: 89000 },\n  { id: 2, name: '\uae30\uacc4\uc2dd \ub9c8\uc6b0\uc2a4', price: 55000 },\n  { id: 3, name: 'USB \ud5c8\ube0c', price: 32000 },\n]\n\n// ---------------------------------------------------------------------------\n// 5. \ud14c\uc2a4\ud2b8 \uc2a4\uc704\ud2b8\n// ---------------------------------------------------------------------------\n\ndescribe('\uc7a5\ubc14\uad6c\ub2c8 \ud1b5\ud569 \ud14c\uc2a4\ud2b8', () => {\n  // \ub9e4 \ud14c\uc2a4\ud2b8\ub9c8\ub2e4 \ub3c5\ub9bd\ub41c Zustand store \uc778\uc2a4\ud134\uc2a4\ub97c \uc0dd\uc131\ud55c\ub2e4.\n  // \u2192 \ud14c\uc2a4\ud2b8 \uac04 \uc0c1\ud0dc \uc624\uc5fc\uc744 \ubc29\uc9c0\ud558\ub294 \ud575\uc2ec \ud328\ud134\n  let useCartStore: ReturnType<typeof createCartStore>\n\n  beforeEach(() => {\n    useCartStore = createCartStore()\n  })\n\n  // -------------------------------------------------------------------------\n  // \uc2dc\ub098\ub9ac\uc624 1: ProductCard \ucd94\uac00 \u2192 Header \uce74\uc6b4\ud2b8 \uc989\uc2dc \ubc18\uc601 (\ud06c\ub85c\uc2a4 \ucef4\ud3ec\ub10c\ud2b8)\n  // -------------------------------------------------------------------------\n  describe('ProductCard \u2192 Header \uc0c1\ud0dc \uacf5\uc720', () => {\n    it('\uc7a5\ubc14\uad6c\ub2c8\uac00 \ube44\uc5b4\uc788\uc744 \ub54c Header\uc5d0 \uce74\uc6b4\ud2b8 \ubc30\uc9c0\uac00 \ud45c\uc2dc\ub418\uc9c0 \uc54a\ub294\ub2e4', () => {\n      render(<ShopLayout products={PRODUCTS} useStore={useCartStore} />)\n\n      expect(screen.queryByTestId('cart-item-count')).not.toBeInTheDocument()\n    })\n\n    it('ProductCard\uc5d0\uc11c \"\uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00\" \ud074\ub9ad \uc2dc Header \uce74\uc6b4\ud2b8\uac00 \uc989\uc2dc 1\uc774 \ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n      render(<ShopLayout products={PRODUCTS} useStore={useCartStore} />)\n\n      await user.click(\n        screen.getByRole('button', { name: `${PRODUCTS[0].name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00` })\n      )\n\n      expect(screen.getByTestId('cart-item-count')).toHaveTextContent('1')\n      expect(\n        screen.getByLabelText(`\uc7a5\ubc14\uad6c\ub2c8 \uc0c1\ud488 1\uac1c`)\n      ).toBeInTheDocument()\n    })\n\n    it('\ub2e4\ub978 \uc0c1\ud488\uc744 \ucd94\uac00\ud560 \ub54c\ub9c8\ub2e4 Header \uce74\uc6b4\ud2b8\uac00 \ub204\uc801\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n      render(<ShopLayout products={PRODUCTS} useStore={useCartStore} />)\n\n      // \uc0c1\ud488 1 \ucd94\uac00\n      await user.click(\n        screen.getByRole('button', { name: `${PRODUCTS[0].name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00` })\n      )\n      expect(screen.getByTestId('cart-item-count')).toHaveTextContent('1')\n\n      // \uc0c1\ud488 2 \ucd94\uac00\n      await user.click(\n        screen.getByRole('button', { name: `${PRODUCTS[1].name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00` })\n      )\n      expect(screen.getByTestId('cart-item-count')).toHaveTextContent('2')\n\n      // \uc0c1\ud488 3 \ucd94\uac00\n      await user.click(\n        screen.getByRole('button', { name: `${PRODUCTS[2].name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00` })\n      )\n      expect(screen.getByTestId('cart-item-count')).toHaveTextContent('3')\n    })\n\n    it('\ub3d9\uc77c \uc0c1\ud488\uc744 \uc5ec\ub7ec \ubc88 \ucd94\uac00\ud558\uba74 \uc218\ub7c9\uc774 \uc99d\uac00\ud558\uace0 Header \uce74\uc6b4\ud2b8\ub3c4 \ub204\uc801\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n      render(<ShopLayout products={PRODUCTS} useStore={useCartStore} />)\n\n      const addButton = screen.getByRole('button', {\n        name: `${PRODUCTS[0].name} \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00`,\n      })\n\n      await user.click(addButton)\n      await user.click(addButton)\n      await user.click(addButton)\n\n      // \ub3d9\uc77c \uc0c1\ud488 3\ubc88 \ucd94\uac00 \u2192 \uc218\ub7c9 3, \uce74\uc6b4\ud2b8 3\n      expect(screen.getByTestId('cart-item-count')).toHaveTextContent('3')\n    })\n  })\n\n  // -------------------------------------------------------------------------\n  // \uc2dc\ub098\ub9ac\uc624 2: CartPage \u2014 \ucd1d \uae08\uc561 \uacc4\uc0b0 \uac80\uc99d\n  // -------------------------------------------------------------------------\n  describe('CartPage \ucd1d \uae08\uc561 \uacc4\uc0b0', () => {\n    it('CartPage \u2014 \uc7a5\ubc14\uad6c\ub2c8\uac00 \ube44\uc5b4\uc788\uc744 \ub54c \ube48 \uc0c1\ud0dc \uba54\uc2dc\uc9c0\ub97c \ud45c\uc2dc\ud55c\ub2e4', () => {\n      render(<CartPage useStore={useCartStore} />)\n\n      expect(screen.getByTestId('empty-cart-message')).toBeInTheDocument()\n      expect(screen.queryByTestId('cart-total-price')).not.toBeInTheDocument()\n    })\n\n    it('CartPage \u2014 \ub2e8\uc77c \uc0c1\ud488 1\uac1c\uc758 \ucd1d \uae08\uc561\uc774 \uc62c\ubc14\ub974\uac8c \uacc4\uc0b0\ub41c\ub2e4', () => {\n      // Zustand \ucd08\uae30 \uc0c1\ud0dc\ub97c \uc9c1\uc811 \uc138\ud305\ud558\uc5ec CartPage\ub97c \uc989\uc2dc \ud14c\uc2a4\ud2b8\n      useCartStore.setState({\n        items: [{ id: 1, name: '\ubb34\uc120 \ud0a4\ubcf4\ub4dc', price: 89000, quantity: 1 }],\n      })\n\n      render(<CartPage useStore={useCartStore} />)\n\n      expect(screen.getByTestId('cart-total-price')).toHaveTextContent(\n        '89,000\uc6d0'\n      )\n    })\n\n    it('CartPage \u2014 \uc5ec\ub7ec \uc0c1\ud488\uc758 \ucd1d \uae08\uc561 \ud569\uc0b0\uc774 \uc62c\ubc14\ub974\ub2e4', () => {\n      // \ubb34\uc120 \ud0a4\ubcf4\ub4dc 89,000 \u00d7 1 + \uae30\uacc4\uc2dd \ub9c8\uc6b0\uc2a4 55,000 \u00d7 2 = 199,000\n      useCartStore.setState({\n        items: [\n          { id: 1, name: '\ubb34\uc120 \ud0a4\ubcf4\ub4dc', price: 89000, quantity: 1 },\n          { id: 2, name: '\uae30\uacc4\uc2dd \ub9c8\uc6b0\uc2a4', price: 55000, quantity: 2 },\n        ],\n      })\n\n      render(<CartPage useStore={useCartStore} />)\n\n      expect(screen.getByTestId('cart-total-price')).toHaveTextContent(\n        '199,000\uc6d0'\n      )\n\n      // \uc18c\uacc4\ub3c4 \uac1c\ubcc4 \uac80\uc99d\n      expect(screen.getByTestId('item-subtotal-1')).toHaveTextContent('89,000\uc6d0')\n      expect(screen.getByTestId('item-subtotal-2')).toHaveTextContent('110,000\uc6d0')\n    })\n\n    it('CartPage \u2014 \uc218\ub7c9 \ubcc0\uacbd \ud6c4 \ucd1d \uae08\uc561\uc774 \uc989\uc2dc \uc7ac\uacc4\uc0b0\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      useCartStore.setState({\n        items: [{ id: 1, name: '\ubb34\uc120 \ud0a4\ubcf4\ub4dc', price: 89000, quantity: 1 }],\n      })\n\n      render(<CartPage useStore={useCartStore} />)\n\n      // \uc218\ub7c9\uc744 1 \u2192 3\uc73c\ub85c \ubcc0\uacbd\n      const quantityInput = screen.getByLabelText('\ubb34\uc120 \ud0a4\ubcf4\ub4dc \uc218\ub7c9')\n      await user.clear(quantityInput)\n      await user.type(quantityInput, '3')\n\n      // 89,000 \u00d7 3 = 267,000\n      expect(screen.getByTestId('cart-total-price')).toHaveTextContent(\n        '267,000\uc6d0'\n      )\n      expect(screen.getByTestId('item-subtotal-1')).toHaveTextContent('267,000\uc6d0')\n    })\n\n    it('CartPage \u2014 \uc544\uc774\ud15c \uc0ad\uc81c \ud6c4 \ucd1d \uae08\uc561\uc774 \uc7ac\uacc4\uc0b0\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      useCartStore.setState({\n        items: [\n          { id: 1, name: '\ubb34\uc120 \ud0a4\ubcf4\ub4dc', price: 89000, quantity: 1 },\n          { id: 2, name: '\uae30\uacc4\uc2dd \ub9c8\uc6b0\uc2a4', price: 55000, quantity: 1 },\n        ],\n      })\n\n      render(<CartPage useStore={useCartStore} />)\n\n      // \ucd08\uae30 \ucd1d \uae08\uc561: 89,000 + 55,000 = 144,000\n      expect(screen.getByTestId('cart-total-price')).toHaveTextContent(\n        '144,000\uc6d0'\n      )\n\n      // \ubb34\uc120 \ud0a4\ubcf4\ub4dc \uc0ad\uc81c\n      await user.click(screen.getByRole('button', { name: '\ubb34\uc120 \ud0a4\ubcf4\ub4dc \uc0ad\uc81c' }))\n\n      // \uc0ad\uc81c \ud6c4 \ucd1d \uae08\uc561: 55,000\n      expect(screen.getByTestId('cart-total-price')).toHaveTextContent(\n        '55,000\uc6d0'\n      )\n      expect(screen.queryByTestId('cart-item-1')).not.toBeInTheDocument()\n    })\n\n    it('CartPage \u2014 \ub9c8\uc9c0\ub9c9 \uc544\uc774\ud15c \uc0ad\uc81c \uc2dc \ube48 \uc7a5\ubc14\uad6c\ub2c8 \uba54\uc2dc\uc9c0\uac00 \ub098\ud0c0\ub09c\ub2e4', async () => {\n      const user = userEvent.setup()\n\n      useCartStore.setState({\n        items: [{ id: 1, name: '\ubb34\uc120 \ud0a4\ubcf4\ub4dc', price: 89000, quantity: 1 }],\n      })\n\n      render(<CartPage useStore={useCartStore} />)\n\n      await user.click(screen.getByRole('button', { name: '\ubb34\uc120 \ud0a4\ubcf4\ub4dc \uc0ad\uc81c' }))\n\n      expect(screen.getByTestId('empty-cart-message')).toBeInTheDocument()\n    })\n  })\n\n  // -------------------------------------------------------------------------\n  // \uc2dc\ub098\ub9ac\uc624 3: ShopLayout + CartPage \ub97c \uac19\uc740 store\ub85c \ub3d9\uc2dc \ub9c8\uc6b4\ud2b8\n  // (\uc2e4\uc81c \uc571\uacfc \uac00\uc7a5 \uc720\uc0ac\ud55c \ud1b5\ud569 \ud14c\uc2a4\ud2b8)\n  // -------------------------------------------------------------------------\n  describe('ShopLayout + CartPage \ud06c\ub85c\uc2a4 \ucef4\ud3ec\ub10c\ud2b8 \ud1b5\ud569', () => {\n    function FullApp({ useStore }: { useStore: () => CartStore }) {\n      return (\n        <>\n          <Header useStore={useStore} />\n          <section aria-label=\"\uc0c1\ud488 \ubaa9\ub85d\">\n            {PRODUCTS.map((p) => (\n              <ProductCard key={p.id} product={p} useStore={useStore} />\n            ))}\n          </section>\n          <CartPage useStore={useStore} />\n        </>\n      )\n    }\n\n    it('ProductCard\uc5d0\uc11c \ucd94\uac00\ud55c \uc0c1\ud488\uc774 CartPage \ubaa9\ub85d\uacfc \ucd1d \uae08\uc561\uc5d0 \ubc18\uc601\ub41c\ub2e4', async () => {\n      const user = userEvent.setup()\n      render(<FullApp useStore={useCartStore} />)\n\n      // \ubb34\uc120 \ud0a4\ubcf4\ub4dc \ucd94\uac00\n      await user.click(\n        screen.getByRole('button', { name: '\ubb34\uc120 \ud0a4\ubcf4\ub4dc \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00' })\n      )\n\n      // Header \uce74\uc6b4\ud2b8 \ud655\uc778\n      expect(screen.getByTestId('cart-item-count')).toHaveTextContent('1')\n\n      // CartPage \ubaa9\ub85d \ud655\uc778\n      expect(screen.getByTestId('cart-item-1')).toBeInTheDocument()\n      expect(\n        within(screen.getByTestId('cart-item-1')).getByTestId('item-name')\n      ).toHaveTextContent('\ubb34\uc120 \ud0a4\ubcf4\ub4dc')\n\n      // CartPage \ucd1d \uae08\uc561 \ud655\uc778\n      expect(screen.getByTestId('cart-total-price')).toHaveTextContent(\n        '89,000\uc6d0'\n      )\n    })\n\n    it('\uc5ec\ub7ec \uc0c1\ud488 \ucd94\uac00 \ud6c4 Header \uce74\uc6b4\ud2b8\uc640 CartPage \ucd1d \uae08\uc561\uc774 \ubaa8\ub450 \uc77c\uce58\ud55c\ub2e4', async () => {\n      const user = userEvent.setup()\n      render(<FullApp useStore={useCartStore} />)\n\n      // \ubb34\uc120 \ud0a4\ubcf4\ub4dc 2\ubc88 \ucd94\uac00 \u2192 \uc218\ub7c9 2\n      await user.click(\n        screen.getByRole('button', { name: '\ubb34\uc120 \ud0a4\ubcf4\ub4dc \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00' })\n      )\n      await user.click(\n        screen.getByRole('button', { name: '\ubb34\uc120 \ud0a4\ubcf4\ub4dc \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00' })\n      )\n\n      // USB \ud5c8\ube0c 1\ubc88 \ucd94\uac00\n      await user.click(\n        screen.getByRole('button', { name: 'USB \ud5c8\ube0c \uc7a5\ubc14\uad6c\ub2c8 \ucd94\uac00' })\n      )\n\n      // \ucd1d \uc218\ub7c9: 2 + 1 = 3\n      expect(screen.getByTestId('cart-item-count')).toHaveTextContent('3')\n\n      // \ucd1d \uae08\uc561: 89,000 \u00d7 2 + 32,000 \u00d7 1 = 210,000\n      expect(screen.getByTestId('cart-total-price')).toHaveTextContent(\n        '210,000\uc6d0'\n      )\n    })\n  })\n})\n"}], "grading": {"eval_id": 2, "eval_name": "cart-flow", "run_type": "without_skill", "expectations": [{"text": "beforeEach\uc5d0\uc11c Zustand \uc2a4\ud1a0\uc5b4\ub97c \ucd08\uae30\ud654\ud55c\ub2e4 (setState \uc0ac\uc6a9)", "passed": true, "evidence": "createCartStore()\ub97c \ub9e4 \ud14c\uc2a4\ud2b8\ub9c8\ub2e4 \uc0c8\ub85c \ud638\ucd9c\ud558\ub294 \ud328\ud134 \uc0ac\uc6a9 (\uc57d\uac04 \ub2e4\ub978 \uc811\uadfc\ubc95\uc774\ub098 \ub3d9\uc77c \ud6a8\uacfc)"}, {"text": "Header\uc640 ProductCard\ub97c \uac19\uc740 render \uc548\uc5d0 \ud568\uaed8 \ub80c\ub354\ub9c1\ud558\uc5ec \ud06c\ub85c\uc2a4 \ucef4\ud3ec\ub10c\ud2b8 \uc0c1\ud0dc \uacf5\uc720\ub97c \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "ShopLayout, FullApp \ud14c\uc2a4\ud2b8\uc6a9 \ub798\ud37c\ub85c \uc5ec\ub7ec \ucef4\ud3ec\ub10c\ud2b8 \uc870\ud569 \ub80c\ub354\ub9c1"}, {"text": "\uc544\uc774\ud15c \ucd94\uac00 \ud6c4 \uce74\uc6b4\ud2b8 \ubcc0\ud654\ub97c \ud655\uc778\ud55c\ub2e4", "passed": true, "evidence": "\uce74\uc6b4\ud2b8 \ubc30\uc9c0 \ubcc0\ud654 \uac80\uc99d \ud3ec\ud568"}, {"text": "\ucd1d \uae08\uc561 \uacc4\uc0b0\uc744 \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "\ucd1d \uae08\uc561 \uacc4\uc0b0 \uac80\uc99d 6\uac1c \ucf00\uc774\uc2a4 \ud3ec\ud568"}, {"text": "userEvent\ub97c \uc0ac\uc6a9\ud55c\ub2e4 (fireEvent \ub300\uc2e0)", "passed": true, "evidence": "userEvent.setup() \uc0ac\uc6a9"}], "pass_rate": 1.0, "notes": "\uc2a4\ud0ac \uc5c6\uc774\ub3c4 \ub300\ubd80\ubd84 \ud328\uc2a4. \ub2e8, \uc2a4\ud0ac \ucd9c\ub825\uc774 \ub354 \uc9c1\uad00\uc801\uc778 useCartStore.setState({}) \ud328\ud134\uc744 \uc0ac\uc6a9\ud558\ub294 \ubc18\uba74, \uc2a4\ud0ac \uc5c6\uc774\ub294 createCartStore() \uc7ac\uc0dd\uc131 \ud328\ud134\uc744 \uc0ac\uc6a9 \u2014 \ub450 \uc811\uadfc\ubc95 \ubaa8\ub450 \uc720\ud6a8"}}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"metadata": {"skill_name": "react-integration-test", "skill_path": "<path/to/skill>", "executor_model": "<model-name>", "analyzer_model": "<model-name>", "timestamp": "2026-04-07T23:04:28Z", "evals_run": [0, 1, 2], "runs_per_configuration": 3}, "runs": [{"eval_id": 0, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 97.3, "tokens": 33618, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "test-utils \ud30c\uc77c\uc5d0 RTK Provider\ub97c \ud3ec\ud568\ud55c renderWithProviders\uac00 \uc815\uc758\ub418\uc5b4 \uc788\ub2e4", "passed": true, "evidence": "Provider, setupStore, configureStore \ubaa8\ub450 \ud3ec\ud568"}, {"text": "MSW v2 \ubb38\ubc95(http.post, HttpResponse)\uc744 \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "http.post \ub7f0\ud0c0\uc784 \uc624\ubc84\ub77c\uc774\ub4dc \ud3ec\ud568"}, {"text": "\ub85c\uadf8\uc778 \uc131\uacf5/\uc2e4\ud328/\ubcf4\ud638\ub41c \ud398\uc774\uc9c0 \ub9ac\ub2e4\uc774\ub809\ud2b8 3\uac00\uc9c0 \uc2dc\ub098\ub9ac\uc624\uac00 \ubaa8\ub450 \uc788\ub2e4", "passed": true, "evidence": "4\uac1c test \ube14\ub85d\uc73c\ub85c 3\uac00\uc9c0 \uc774\uc0c1 \uc2dc\ub098\ub9ac\uc624 \ud3ec\ud568"}, {"text": "\ube44\ub3d9\uae30 \ucffc\ub9ac(findBy* \ub610\ub294 waitFor)\ub97c \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "screen.findByRole \ubaa8\ub4e0 \uc2dc\ub098\ub9ac\uc624\uc5d0\uc11c \uc0ac\uc6a9"}, {"text": "userEvent.setup()\uc744 \uc0ac\uc6a9\ud55c\ub2e4 (fireEvent \ub300\uc2e0)", "passed": true, "evidence": "userEvent.setup() \ub450 \uacf3\uc5d0\uc11c \uc0ac\uc6a9. fireEvent \uc5c6\uc74c"}], "notes": []}, {"eval_id": 1, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 80.9, "tokens": 32161, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "MSW server.use()\ub85c \ub7f0\ud0c0\uc784 \ud578\ub4e4\ub7ec \uc624\ubc84\ub77c\uc774\ub4dc\ub97c \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "server.use(http.post(..., 500)) \uc0ac\uc6a9"}, {"text": "\ube44\ub3d9\uae30 \ud328\ud134(findBy*, waitFor, waitForElementToBeRemoved)\uc744 \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "waitForElementToBeRemoved, findAllByRole, findByRole \ubaa8\ub450 \uc0ac\uc6a9"}, {"text": "\uc131\uacf5 \ud6c4 \uc785\ub825\ucc3d \ucd08\uae30\ud654\ub97c \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "expect(textarea).toHaveValue(\"\")"}, {"text": "API \uc624\ub958 \uc2dc \uc785\ub825\uac12 \uc720\uc9c0\ub97c \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "expect(textarea).toHaveValue(INPUT_TEXT)"}, {"text": "\uc131\uacf5/\uc720\ud6a8\uc131 \uc2e4\ud328/API \uc624\ub958 3\uac00\uc9c0 \ucf00\uc774\uc2a4\uac00 \uc788\ub2e4", "passed": true, "evidence": "4\uac1c test \ube14\ub85d \ud3ec\ud568"}], "notes": []}, {"eval_id": 2, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 81.2, "tokens": 32034, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "beforeEach\uc5d0\uc11c Zustand \uc2a4\ud1a0\uc5b4\ub97c \ucd08\uae30\ud654\ud55c\ub2e4", "passed": true, "evidence": "useCartStore.setState({ items: [] }) in beforeEach"}, {"text": "Header\uc640 ProductCard\ub97c \ud568\uaed8 \ub80c\ub354\ub9c1\ud558\uc5ec \ud06c\ub85c\uc2a4 \ucef4\ud3ec\ub10c\ud2b8 \uc0c1\ud0dc \uacf5\uc720\ub97c \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "render(<><Header /><ProductCard /></>) \ud328\ud134 4\uac1c \ud14c\uc2a4\ud2b8"}, {"text": "\uc544\uc774\ud15c \ucd94\uac00 \ud6c4 \uce74\uc6b4\ud2b8 \ubcc0\ud654\ub97c \ud655\uc778\ud55c\ub2e4", "passed": true, "evidence": "getByLabelText(\"\uc7a5\ubc14\uad6c\ub2c8 (0\uac1c)\") \u2192 \"\uc7a5\ubc14\uad6c\ub2c8 (1\uac1c)\" \uac80\uc99d"}, {"text": "\ucd1d \uae08\uc561 \uacc4\uc0b0\uc744 \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "getByText(\"\ucd1d \ud569\uacc4: 25,000\uc6d0\") \ub4f1 \ub2e4\uc218 \ucd1d\uc561 \uac80\uc99d"}, {"text": "userEvent\ub97c \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "userEvent.setup() \ubaa8\ub4e0 interaction \ud14c\uc2a4\ud2b8\uc5d0\uc11c \uc0ac\uc6a9"}], "notes": []}, {"eval_id": 0, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 138.0, "tokens": 32060, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "test-utils \ud30c\uc77c\uc5d0 RTK Provider\ub97c \ud3ec\ud568\ud55c renderWithProviders\uac00 \uc815\uc758\ub418\uc5b4 \uc788\ub2e4", "passed": true, "evidence": "Provider + MemoryRouter \ud3ec\ud568 test-utils.tsx \uc790\uccb4 \uc0dd\uc131"}, {"text": "MSW v2 \ubb38\ubc95(http.post, HttpResponse)\uc744 \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "MSW v2 API \uc815\ud655\ud788 \uc801\uc6a9"}, {"text": "\ub85c\uadf8\uc778 \uc131\uacf5/\uc2e4\ud328/\ubcf4\ud638\ub41c \ud398\uc774\uc9c0 \ub9ac\ub2e4\uc774\ub809\ud2b8 3\uac00\uc9c0 \uc2dc\ub098\ub9ac\uc624\uac00 \ubaa8\ub450 \uc788\ub2e4", "passed": true, "evidence": "5\uac1c \uc2dc\ub098\ub9ac\uc624 \ud3ec\ud568 (\ub354 \ub9ce\uc74c)"}, {"text": "\ube44\ub3d9\uae30 \ucffc\ub9ac(findBy* \ub610\ub294 waitFor)\ub97c \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "waitFor \ubc0f findBy* \ud328\ud134 \uc0ac\uc6a9"}, {"text": "userEvent.setup()\uc744 \uc0ac\uc6a9\ud55c\ub2e4 (fireEvent \ub300\uc2e0)", "passed": true, "evidence": "userEvent \uc0ac\uc6a9"}], "notes": []}, {"eval_id": 1, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 84.5, "tokens": 23149, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "MSW server.use()\ub85c \ub7f0\ud0c0\uc784 \ud578\ub4e4\ub7ec \uc624\ubc84\ub77c\uc774\ub4dc\ub97c \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "server.use() \uc624\ubc84\ub77c\uc774\ub4dc \uc0ac\uc6a9"}, {"text": "\ube44\ub3d9\uae30 \ud328\ud134(findBy*, waitFor, waitForElementToBeRemoved)\uc744 \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "findAllByRole \ub4f1 \ube44\ub3d9\uae30 \ud328\ud134 \uc0ac\uc6a9"}, {"text": "\uc131\uacf5 \ud6c4 \uc785\ub825\ucc3d \ucd08\uae30\ud654\ub97c \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "\uc785\ub825\ucc3d \ucd08\uae30\ud654 \uac80\uc99d \ud3ec\ud568"}, {"text": "API \uc624\ub958 \uc2dc \uc785\ub825\uac12 \uc720\uc9c0\ub97c \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "\uc5d0\ub7ec \ucf00\uc774\uc2a4\uc5d0\uc11c \uc785\ub825\uac12 \uc720\uc9c0 \ud655\uc778"}, {"text": "\uc131\uacf5/\uc720\ud6a8\uc131 \uc2e4\ud328/API \uc624\ub958 3\uac00\uc9c0 \ucf00\uc774\uc2a4\uac00 \uc788\ub2e4", "passed": true, "evidence": "5\uac1c describe \ube14\ub85d \ud3ec\ud568"}], "notes": []}, {"eval_id": 2, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 99.0, "tokens": 27075, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "beforeEach\uc5d0\uc11c Zustand \uc2a4\ud1a0\uc5b4\ub97c \ucd08\uae30\ud654\ud55c\ub2e4", "passed": true, "evidence": "createCartStore() \ub9e4 \ud14c\uc2a4\ud2b8\ub9c8\ub2e4 \uc0c8\ub85c \uc0dd\uc131 (\ub2e4\ub978 \uc811\uadfc\ubc95, \ub3d9\uc77c \ud6a8\uacfc)"}, {"text": "Header\uc640 ProductCard\ub97c \ud568\uaed8 \ub80c\ub354\ub9c1\ud558\uc5ec \ud06c\ub85c\uc2a4 \ucef4\ud3ec\ub10c\ud2b8 \uc0c1\ud0dc \uacf5\uc720\ub97c \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "ShopLayout, FullApp \ub798\ud37c\ub85c \uc5ec\ub7ec \ucef4\ud3ec\ub10c\ud2b8 \uc870\ud569 \ub80c\ub354\ub9c1"}, {"text": "\uc544\uc774\ud15c \ucd94\uac00 \ud6c4 \uce74\uc6b4\ud2b8 \ubcc0\ud654\ub97c \ud655\uc778\ud55c\ub2e4", "passed": true, "evidence": "\uce74\uc6b4\ud2b8 \ubc30\uc9c0 \ubcc0\ud654 \uac80\uc99d \ud3ec\ud568"}, {"text": "\ucd1d \uae08\uc561 \uacc4\uc0b0\uc744 \uac80\uc99d\ud55c\ub2e4", "passed": true, "evidence": "\ucd1d \uae08\uc561 \uacc4\uc0b0 6\uac1c \ucf00\uc774\uc2a4 \ud3ec\ud568"}, {"text": "userEvent\ub97c \uc0ac\uc6a9\ud55c\ub2e4", "passed": true, "evidence": "userEvent.setup() \uc0ac\uc6a9"}], "notes": []}], "run_summary": {"with_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 86.4667, "stddev": 9.3831, "min": 80.9, "max": 97.3}, "tokens": {"mean": 32604.3333, "stddev": 880.1547, "min": 32034, "max": 33618}}, "without_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 107.1667, "stddev": 27.6692, "min": 84.5, "max": 138.0}, "tokens": {"mean": 27428.0, "stddev": 4465.9755, "min": 23149, "max": 32060}}, "delta": {"pass_rate": "+0.00", "time_seconds": "-20.7", "tokens": "+5176"}}, "notes": []}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

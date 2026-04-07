@@ -1,0 +1,104 @@
+{
+  "skill_name": "react-integration-test",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "우리 React 앱에 로그인 통합 테스트를 작성해줘. 스택은 Vite + React 18 + React Router v6 + Redux Toolkit + MSW v2야. LoginPage 컴포넌트가 /login에 있고, 성공하면 /dashboard로 이동해. 실패하면 form 아래에 에러 메시지가 나타나. ProtectedRoute도 있어서 비인증 상태면 /login으로 리다이렉트 돼. 아직 test-utils.tsx나 MSW 핸들러 파일이 없어.",
+      "expected_output": "renderWithProviders(RTK+Router 포함), MSW 핸들러 설정, 로그인 성공/실패/protected route 3가지 시나리오 포함된 테스트 코드",
+      "files": [],
+      "assertions": [
+        {
+          "id": "login-has-rtk-provider",
+          "text": "test-utils 파일에 RTK Provider(redux store)를 포함한 renderWithProviders가 정의되어 있다",
+          "check": "outputs/test-utils.tsx에 'Provider'와 'setupStore' 또는 'configureStore'가 포함되어 있다"
+        },
+        {
+          "id": "login-uses-msw-v2",
+          "text": "MSW v2 문법(http.post, HttpResponse)을 사용한다",
+          "check": "출력 파일에 'from msw'와 'http.post'가 포함되어 있다"
+        },
+        {
+          "id": "login-three-scenarios",
+          "text": "로그인 성공/실패/보호된 페이지 리다이렉트 3가지 시나리오가 모두 있다",
+          "check": "테스트 파일에 로그인 성공 시나리오, 실패 시나리오, 비인증 리다이렉트 시나리오가 각각 하나 이상 존재한다"
+        },
+        {
+          "id": "login-async-queries",
+          "text": "비동기 쿼리(findBy* 또는 waitFor)를 사용한다",
+          "check": "테스트 파일에 'findBy' 또는 'waitFor'가 포함되어 있다"
+        },
+        {
+          "id": "login-user-event-setup",
+          "text": "userEvent.setup()을 사용한다 (fireEvent 대신)",
+          "check": "테스트 파일에 'userEvent.setup()'이 포함되어 있고 'fireEvent'는 없다"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "댓글 기능 통합 테스트 짜줘. React Query v5 + MSW v2 환경이야. PostDetail 페이지에 댓글 목록(CommentList)이랑 댓글 작성 폼(CommentForm)이 같이 있어. 폼에서 제출하면 POST /api/posts/:id/comments 호출하고, 성공하면 목록에 새 댓글이 추가되고 입력창이 초기화돼. API 실패 시에는 에러 메시지 표시하고 입력값 유지해야 해. renderWithProviders는 이미 QueryClientProvider + MemoryRouter로 설정되어 있어(src/test-utils.tsx에 있음).",
+      "expected_output": "댓글 작성 성공/유효성 실패/API 오류 3가지 시나리오, findBy 비동기 패턴, MSW 런타임 오버라이드 사용",
+      "files": [],
+      "assertions": [
+        {
+          "id": "comment-runtime-override",
+          "text": "MSW server.use()로 런타임 핸들러 오버라이드를 사용한다 (API 오류 케이스)",
+          "check": "테스트 파일에 'server.use('가 포함되어 있다"
+        },
+        {
+          "id": "comment-async-pattern",
+          "text": "비동기 패턴(findBy*, waitFor, waitForElementToBeRemoved)을 사용한다",
+          "check": "테스트 파일에 'findBy' 또는 'waitFor' 또는 'waitForElementToBeRemoved'가 포함되어 있다"
+        },
+        {
+          "id": "comment-form-reset",
+          "text": "성공 후 입력창 초기화를 검증한다",
+          "check": "테스트 파일에 \"toHaveValue('')\" 또는 input cleared 관련 단언이 있다"
+        },
+        {
+          "id": "comment-error-input-preserved",
+          "text": "API 오류 시 입력값 유지를 검증한다",
+          "check": "API 오류 케이스 테스트에서 입력값이 유지되는지 toHaveValue로 확인한다"
+        },
+        {
+          "id": "comment-three-cases",
+          "text": "성공/유효성 실패/API 오류 3가지 케이스가 있다",
+          "check": "테스트 파일에 3개 이상의 test() 또는 it() 블록이 있다"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "장바구니 통합 테스트 작성해줘. Zustand 스토어로 장바구니 상태를 관리해. ProductCard 컴포넌트에 '장바구니 추가' 버튼이 있고, Header 컴포넌트에 장바구니 아이콘 + 아이템 개수가 표시돼. 두 컴포넌트가 같은 Zustand store를 구독해서 ProductCard에서 추가하면 Header 카운트가 즉시 바뀌어야 해. CartPage에서는 총 금액 계산도 검증해줘.",
+      "expected_output": "Zustand beforeEach 초기화 패턴, 크로스 컴포넌트 상태 공유 검증, 초기 state 설정으로 CartPage 테스트, userEvent 사용",
+      "files": [],
+      "assertions": [
+        {
+          "id": "cart-zustand-reset",
+          "text": "beforeEach에서 Zustand 스토어를 초기화한다 (setState 사용)",
+          "check": "테스트 파일에 'setState' 또는 'useCartStore.setState' 또는 'clearCart'와 'beforeEach'가 함께 있다"
+        },
+        {
+          "id": "cart-cross-component",
+          "text": "Header와 ProductCard를 같은 render 안에 함께 렌더링하여 크로스 컴포넌트 상태 공유를 검증한다",
+          "check": "테스트 파일에 Header와 ProductCard 또는 유사한 두 컴포넌트를 함께 렌더링하는 코드가 있다"
+        },
+        {
+          "id": "cart-count-update",
+          "text": "아이템 추가 후 카운트 변화를 확인한다",
+          "check": "테스트 파일에 아이템 개수나 카운트를 검증하는 단언이 있다"
+        },
+        {
+          "id": "cart-total-calculation",
+          "text": "총 금액 계산을 검증한다",
+          "check": "테스트 파일에 총액/합계/price/total 관련 단언이 있다"
+        },
+        {
+          "id": "cart-user-event",
+          "text": "userEvent를 사용한다 (fireEvent 대신)",
+          "check": "테스트 파일에 'userEvent'가 포함되어 있다"
+        }
+      ]
+    }
+  ]
+}

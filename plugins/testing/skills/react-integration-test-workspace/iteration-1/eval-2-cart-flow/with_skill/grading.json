@@ -1,0 +1,34 @@
+{
+  "eval_id": 2,
+  "eval_name": "cart-flow",
+  "run_type": "with_skill",
+  "expectations": [
+    {
+      "text": "beforeEach에서 Zustand 스토어를 초기화한다 (setState 사용)",
+      "passed": true,
+      "evidence": "beforeEach(() => { useCartStore.setState({ items: [] }) }) — 스킬의 Zustand 패턴 정확히 적용"
+    },
+    {
+      "text": "Header와 ProductCard를 같은 render 안에 함께 렌더링하여 크로스 컴포넌트 상태 공유를 검증한다",
+      "passed": true,
+      "evidence": "render(<><Header /><ProductCard product={product} /></>) 패턴으로 크로스 컴포넌트 4개 테스트"
+    },
+    {
+      "text": "아이템 추가 후 카운트 변화를 확인한다",
+      "passed": true,
+      "evidence": "getByLabelText('장바구니 (0개)') → 클릭 → getByLabelText('장바구니 (1개)') 카운트 변화 검증"
+    },
+    {
+      "text": "총 금액 계산을 검증한다",
+      "passed": true,
+      "evidence": "getByText('총 합계: 25,000원'), '총 합계: 111,000원' 등 다수의 총액 계산 검증"
+    },
+    {
+      "text": "userEvent를 사용한다 (fireEvent 대신)",
+      "passed": true,
+      "evidence": "import userEvent from '@testing-library/user-event' 사용. userEvent.setup() 모든 interaction 테스트에서 사용"
+    }
+  ],
+  "pass_rate": 1.0,
+  "notes": "references/providers-setup.md의 Zustand 패턴 5를 정확히 활용. 아이템 삭제 후 총액 갱신, 빈 장바구니 엣지 케이스, E2E 유사 시나리오까지 포함. 매우 완성도 높음"
+}

@@ -1,0 +1,34 @@
+{
+  "eval_id": 0,
+  "eval_name": "login-flow",
+  "run_type": "with_skill",
+  "expectations": [
+    {
+      "text": "test-utils 파일에 RTK Provider(redux store)를 포함한 renderWithProviders가 정의되어 있다",
+      "passed": true,
+      "evidence": "test-utils.tsx에 import Provider from react-redux, setupStore, configureStore 모두 포함. renderWithProviders에 <Provider store={store}> 래핑"
+    },
+    {
+      "text": "MSW v2 문법(http.post, HttpResponse)을 사용한다",
+      "passed": true,
+      "evidence": "import { http, HttpResponse } from 'msw' 사용, http.post('/api/auth/login', ...) 런타임 오버라이드 포함"
+    },
+    {
+      "text": "로그인 성공/실패/보호된 페이지 리다이렉트 3가지 시나리오가 모두 있다",
+      "passed": true,
+      "evidence": "test 1: 성공→/dashboard, test 2: 실패→에러메시지, test 3: 비인증→/login 리다이렉트, test 4(보너스): 인증→대시보드"
+    },
+    {
+      "text": "비동기 쿼리(findBy* 또는 waitFor)를 사용한다",
+      "passed": true,
+      "evidence": "screen.findByRole('heading', { name: '대시보드' }), screen.findByRole('alert'), screen.findByRole('heading', { name: '로그인' }) 모두 await findBy 패턴 사용"
+    },
+    {
+      "text": "userEvent.setup()을 사용한다 (fireEvent 대신)",
+      "passed": true,
+      "evidence": "userEvent.setup() 두 곳에서 사용(test 1, test 2). fireEvent 없음"
+    }
+  ],
+  "pass_rate": 1.0,
+  "notes": "인라인 stub 패턴으로 실제 컴포넌트 없이도 동작 검증 가능한 완성도 높은 코드. preloadedState 활용으로 인증 상태 주입 패턴도 잘 보여줌"
+}

@@ -1,0 +1,6 @@
+{
+  "eval_id": 1,
+  "eval_name": "comment-flow",
+  "prompt": "댓글 기능 통합 테스트 짜줘. React Query v5 + MSW v2 환경이야. PostDetail 페이지에 댓글 목록(CommentList)이랑 댓글 작성 폼(CommentForm)이 같이 있어. 폼에서 제출하면 POST /api/posts/:id/comments 호출하고, 성공하면 목록에 새 댓글이 추가되고 입력창이 초기화돼. API 실패 시에는 에러 메시지 표시하고 입력값 유지해야 해. renderWithProviders는 이미 QueryClientProvider + MemoryRouter로 설정되어 있어(src/test-utils.tsx에 있음).",
+  "assertions": []
+}

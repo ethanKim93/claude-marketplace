@@ -1,0 +1,38 @@
+{
+  "eval_id": 1,
+  "eval_name": "comment-flow",
+  "run_type": "with_skill",
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 5,
+    "failed": 0,
+    "total": 5
+  },
+  "expectations": [
+    {
+      "text": "MSW server.use()로 런타임 핸들러 오버라이드를 사용한다",
+      "passed": true,
+      "evidence": "server.use(http.post(..., 500)) 사용"
+    },
+    {
+      "text": "비동기 패턴(findBy*, waitFor, waitForElementToBeRemoved)을 사용한다",
+      "passed": true,
+      "evidence": "waitForElementToBeRemoved, findAllByRole, findByRole 모두 사용"
+    },
+    {
+      "text": "성공 후 입력창 초기화를 검증한다",
+      "passed": true,
+      "evidence": "expect(textarea).toHaveValue(\"\")"
+    },
+    {
+      "text": "API 오류 시 입력값 유지를 검증한다",
+      "passed": true,
+      "evidence": "expect(textarea).toHaveValue(INPUT_TEXT)"
+    },
+    {
+      "text": "성공/유효성 실패/API 오류 3가지 케이스가 있다",
+      "passed": true,
+      "evidence": "4개 test 블록 포함"
+    }
+  ]
+}

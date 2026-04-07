@@ -1,0 +1,38 @@
+{
+  "eval_id": 2,
+  "eval_name": "cart-flow",
+  "run_type": "with_skill",
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 5,
+    "failed": 0,
+    "total": 5
+  },
+  "expectations": [
+    {
+      "text": "beforeEach에서 Zustand 스토어를 초기화한다",
+      "passed": true,
+      "evidence": "useCartStore.setState({ items: [] }) in beforeEach"
+    },
+    {
+      "text": "Header와 ProductCard를 함께 렌더링하여 크로스 컴포넌트 상태 공유를 검증한다",
+      "passed": true,
+      "evidence": "render(<><Header /><ProductCard /></>) 패턴 4개 테스트"
+    },
+    {
+      "text": "아이템 추가 후 카운트 변화를 확인한다",
+      "passed": true,
+      "evidence": "getByLabelText(\"장바구니 (0개)\") → \"장바구니 (1개)\" 검증"
+    },
+    {
+      "text": "총 금액 계산을 검증한다",
+      "passed": true,
+      "evidence": "getByText(\"총 합계: 25,000원\") 등 다수 총액 검증"
+    },
+    {
+      "text": "userEvent를 사용한다",
+      "passed": true,
+      "evidence": "userEvent.setup() 모든 interaction 테스트에서 사용"
+    }
+  ]
+}

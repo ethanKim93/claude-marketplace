@@ -9,6 +9,10 @@
     {
       "name": "folder-organizer",
       "source": "./skills/folder-organizer"
+    },
+    {
+      "name": "knowledge-curator",
+      "source": "./skills/knowledge-curator"
     }
   ]
 }

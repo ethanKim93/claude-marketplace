@@ -131,6 +131,7 @@ docs/
 | 커맨드 | 역할 |
 |--------|------|
 | `/folder-organizer` | 디렉터리 구조 분석 — 프로젝트 유형 감지, 13가지 진단 검사, 건강 점수 산출, 정리 실행 |
+| `/knowledge-curator` | Claude Code 지식 베이스 관리 — ADR·용어집·함정·컨텍스트 스냅샷 포착·정리·압축, CLAUDE.md 동기화 |
 
 ### database
 Oracle Database 설계 및 리뷰. 요구사항 수집 → 개념/논리/물리 설계 → DDL 생성 → 안티패턴 리뷰 → 최적화 검토를 단계별 안내. 확인 사항이 많으면 설문서 파일을 생성하여 사용자가 답변을 채우는 방식으로 진행.
@@ -139,6 +140,22 @@ Oracle Database 설계 및 리뷰. 요구사항 수집 → 개념/논리/물리 
 |--------|------|
 | `/oracle-db-designer` | 대화형 Oracle DB 설계 — 표준 용어 사전, 네이밍 컨벤션, 파티션 키 설계, DDL 자동 생성, 안티패턴 검토 |
 | `/oracle-db-reviewer` | 기존 Oracle DB 설계 종합 리뷰 — 8차원 평가(구조·네이밍·타입·제약·성능·보안·유지보수·안티패턴), 26개 안티패턴 진단, 건강 점수 산출, MD 리포트 생성 |
+
+### testing
+테스트 코드 자동 생성. Spring Boot(단위/통합)와 React(RTL/Jest/Vitest/MSW) 테스트를 지원한다.
+
+| 커맨드 | 역할 |
+|--------|------|
+| `/spring-unit-test` | Spring Boot 계층별 단위 테스트 코드 생성 — Controller(@WebMvcTest), Service(@ExtendWith), Repository(@DataJpaTest), Mockito 패턴, BDD 네이밍, 안티패턴 진단 |
+| `/spring-integration-test` | Spring Boot 통합 테스트 코드 생성 — @SpringBootTest 전략(MOCK/RANDOM_PORT/NONE), Testcontainers(DB/Redis/Kafka), Security 통합, 비동기/Awaitility, @Sql 픽스처, 컨텍스트 캐싱 최적화 |
+| `/react-unit-test` | React 컴포넌트·커스텀 훅 단위 테스트 생성 — RTL 쿼리 우선순위, userEvent, MSW API 모킹, renderHook, 비동기/Form/Context 패턴, Jest·Vitest 설정 지원 |
+
+### api-design
+HTTP/REST API 설계. 리소스 모델링 → 엔드포인트 계약 설계 → 인증·버전관리·에러처리 공통 관심사 → OpenAPI 3.0 스펙 생성 → 안티패턴 진단의 전 과정을 단계별 안내.
+
+| 커맨드 | 역할 |
+|--------|------|
+| `/api-designer` | HTTP/REST API 설계 — 리소스 모델링, 엔드포인트 계약, OpenAPI 3.0 스펙 생성, 26개 안티패턴 진단, 24개 체크포인트 리뷰 |
 
 ## 마켓플레이스 검증
 

@@ -1,0 +1,34 @@
+{
+  "eval_id": 1,
+  "eval_name": "comment-flow",
+  "run_type": "with_skill",
+  "expectations": [
+    {
+      "text": "MSW server.use()로 런타임 핸들러 오버라이드를 사용한다 (API 오류 케이스)",
+      "passed": true,
+      "evidence": "시나리오 3에서 server.use(http.post(..., () => HttpResponse.json({...}, { status: 500 }))) 런타임 오버라이드 사용"
+    },
+    {
+      "text": "비동기 패턴(findBy*, waitFor, waitForElementToBeRemoved)을 사용한다",
+      "passed": true,
+      "evidence": "waitForElementToBeRemoved 사용(시나리오 4), findAllByRole 사용(모든 시나리오), findByRole 사용(시나리오 2,3)"
+    },
+    {
+      "text": "성공 후 입력창 초기화를 검증한다",
+      "passed": true,
+      "evidence": "시나리오 1: expect(textarea).toHaveValue('') — 명시적 초기화 검증"
+    },
+    {
+      "text": "API 오류 시 입력값 유지를 검증한다",
+      "passed": true,
+      "evidence": "시나리오 3: expect(textarea).toHaveValue(INPUT_TEXT) — 에러 후 입력값 보존 확인"
+    },
+    {
+      "text": "성공/유효성 실패/API 오류 3가지 케이스가 있다",
+      "passed": true,
+      "evidence": "4개 test 블록: 작성 성공, 유효성 실패, API 오류, 로딩→성공 전환(보너스)"
+    }
+  ],
+  "pass_rate": 1.0,
+  "notes": "SKILL.md Phase 3 시나리오 2 패턴을 매우 충실하게 따름. afterEach server.resetHandlers() 포함, waitForElementToBeRemoved 활용 예시 포함"
+}

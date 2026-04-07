@@ -1,0 +1,38 @@
+{
+  "eval_id": 0,
+  "eval_name": "login-flow",
+  "run_type": "without_skill",
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 5,
+    "failed": 0,
+    "total": 5
+  },
+  "expectations": [
+    {
+      "text": "test-utils 파일에 RTK Provider를 포함한 renderWithProviders가 정의되어 있다",
+      "passed": true,
+      "evidence": "Provider + MemoryRouter 포함 test-utils.tsx 자체 생성"
+    },
+    {
+      "text": "MSW v2 문법(http.post, HttpResponse)을 사용한다",
+      "passed": true,
+      "evidence": "MSW v2 API 정확히 적용"
+    },
+    {
+      "text": "로그인 성공/실패/보호된 페이지 리다이렉트 3가지 시나리오가 모두 있다",
+      "passed": true,
+      "evidence": "5개 시나리오 포함 (더 많음)"
+    },
+    {
+      "text": "비동기 쿼리(findBy* 또는 waitFor)를 사용한다",
+      "passed": true,
+      "evidence": "waitFor 및 findBy* 패턴 사용"
+    },
+    {
+      "text": "userEvent.setup()을 사용한다 (fireEvent 대신)",
+      "passed": true,
+      "evidence": "userEvent 사용"
+    }
+  ]
+}

@@ -43,6 +43,24 @@
       "version": "1.0.0",
       "author": "kimminhyeon",
       "keywords": ["oracle", "database", "db-design", "ddl", "erd", "normalization", "partitioning", "naming-convention", "standard-dictionary"]
+    },
+    {
+      "name": "testing",
+      "source": "./plugins/testing",
+      "description": "테스트 코드 자동 생성 스킬 모음 — Spring Boot(JUnit5/Mockito) 및 React(RTL/Jest/Vitest/MSW) 단위 테스트 지원",
+      "category": "development",
+      "version": "2.0.0",
+      "author": "kimminhyeon",
+      "keywords": ["spring", "junit", "mockito", "testing", "unit-test", "integration-test", "tdd", "webmvctest", "datajpatest", "react", "rtl", "react-testing-library", "jest", "vitest", "msw", "hooks", "frontend"]
+    },
+    {
+      "name": "api-design",
+      "source": "./plugins/api-design",
+      "description": "HTTP/REST API 설계 스킬 — 리소스 모델링, 엔드포인트 계약 설계, OpenAPI 3.0 스펙 생성, 안티패턴 진단",
+      "category": "development",
+      "version": "1.0.0",
+      "author": "kimminhyeon",
+      "keywords": ["api", "rest", "http", "openapi", "swagger", "api-design", "endpoint", "url-design", "authentication", "versioning", "pagination"]
     }
   ]
 }
